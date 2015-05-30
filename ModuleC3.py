@@ -1,5 +1,5 @@
-from ControllerModule import ControllerModule
 import time
+from ControllerModule import ControllerModule
 
 
 # Sample Controller Module 2
@@ -20,13 +20,22 @@ class ModuleC3(ControllerModule):
                 # Process the CBT here
                 # Analyse CBT. If heavy, run it on another thread
     
-                # If the request to strip C3 was from another module, strip "C3" and notify it back.
+                # If the request to strip C3 was from another module,
+                # strip "C3" and notify it back.
                 if(cbt['initiator']!='CFx'):
                     cbt['data'] = cbt['data'].strip("C3")
-                    print "ModuleC3: Finished servicing the request of "+cbt['initiator']+" Sending back the CBT\n"
+                    print "ModuleC3: Finished servicing the request",\
+                            "of "+cbt['initiator']+". Sending back the CBT\n"
+
                     cbt['recipient'] = cbt['initiator']
                     cbt['initiator'] = "ModuleC3"
-                    self.cfxObject.submitCBT(cbt) # Submit the CBT to CFx with ModuleA1 as the recipient
+
+                    # Submit the CBT to CFx with ModuleA1 as the recipient
+                    self.cfxObject.submitCBT(cbt)
+
                 else:
-                    cbt['data'] = cbt['data'].strip("C3") # If CBT was from CFx, just strip "C3"
+                    # If CBT was from CFx, just strip "C3"
+                    cbt['data'] = cbt['data'].strip("C3")
                     print "ModuleC3: Finished Processing the CBT from CFx\n"
+
+

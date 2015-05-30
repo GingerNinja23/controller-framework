@@ -1,6 +1,5 @@
-from ControllerModule import ControllerModule
 import time
-
+from ControllerModule import ControllerModule
 
 # Sample Controller Module 1
 # ControllerModule is an abstract class
@@ -20,11 +19,15 @@ class ModuleA1(ControllerModule):
                 # Process the CBT here
                 # Analyse CBT. If heavy, run it on another thread
 
-                if cbt['data'].startswith("C3"): # If data starts with C3, ask ModuleC3 to strip "C3" first
+                # If data starts with C3, ask ModuleC3 to strip "C3" first
+                if cbt['data'].startswith("C3"): 
                     cbt['initiator'] = "ModuleA1"
                     cbt['recipient'] = "ModuleC3"
-                    self.cfxObject.submitCBT(cbt) # Issue CBT to CFx with ModuleC3 as recipient
-                    print "ModuleA1: CBT sent to ModuleC3 by ModuleA1 for processing\n"
+                    # Issue CBT to CFx with ModuleC3 as recipient
+                    self.cfxObject.submitCBT(cbt)
+                    print "ModuleA1: CBT sent to ModuleC3 for processing\n"
                 else:
                     cbt['data'] = cbt['data'].strip("A1")
                     print "ModuleA1: Finished Processing the CBT from CFx\n"
+
+
