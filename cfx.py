@@ -32,7 +32,8 @@ class CFX(object):
 
     def getCBT(self,moduleName):
 
-        # Get CBT from the Queue. Exception is raised if queue is empty
+        # Get CBT from the Queue. This is a blocking call and will block the
+        # calling thread until an item is put into the corresponding Queue
         cbt = self.queueDict[moduleName].get()
 
         return cbt
@@ -102,7 +103,7 @@ class CFX(object):
             self.moduleInstances[key].terminate()
 
         for key in self.queueDict:
-            
+
             # Create a special terminate CBT to terminate the CMs
             terminateCBT = self.createCBT()
             terminateCBT['initiator'] = 'CFx'
@@ -131,6 +132,11 @@ class CFX(object):
         }
         return CBT
 
+    def inPendingDict(self,CBT,moduleName):
+        if(CBT['uid'] in self.pendingDict[moduleName]):
+            return True
+        else:
+            return False
 
 def main():
     CFx = CFX()
