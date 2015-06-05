@@ -20,40 +20,36 @@ class ModuleC3(ControllerModule):
         # The CM continues to process CBTs until the stop flag
         # is set. Once the stop flag is set, the CM finishes processing
         # the current CBT and then exits
-        cbt = None
+
         while(not self.stop.is_set()):
             time.sleep(2)
-            try:
-                cbt = self.cfxObject.getCBT("ModuleC3")
-            except:
-                pass
-            if(cbt):
-                print "Module C3: CBT received " + str(cbt)+"\n"
-                # Process the CBT here
-                # Analyse CBT. If heavy, run it on another thread
-    
-                # If the request to strip C3 was from another module,
-                # strip "C3" and notify it back.
-                if(cbt['initiator']!='CFx'):
-                    cbt['data'] = cbt['data'].strip("C3")
-                    print "ModuleC3: Finished servicing the request",\
-                            "of "+cbt['initiator']+". Sending back the CBT\n"
+            cbt = self.cfxObject.getCBT("ModuleC3")
+            print "Module C3: CBT received " + str(cbt)+"\n"
+            # Process the CBT here
+            # Analyse CBT. If heavy, run it on another thread
 
-                    cbt['recipient'] = cbt['initiator']
-                    cbt['initiator'] = "ModuleC3"
+            # If the request to strip C3 was from another module,
+            # strip "C3" and notify it back.
+            if(cbt['initiator']!='cbtModule' and cbt['initiator']!= 'CFx'):
 
-                    # Submit the CBT to CFx with ModuleA1 as the recipient
-                    self.cfxObject.submitCBT(cbt)
+                self.cfxObject.addToPendingDict(cbt,"ModuleC3")
 
-                else:
-                    # If CBT was from CFx, just strip "C3"
-                    cbt['data'] = cbt['data'].strip("C3")
-                    print "ModuleC3: Finished Processing the CBT from CFx\n"
+                cbt['data'] = cbt['data'].strip("C3")
+                print "ModuleC3: Finished servicing the request",\
+                        "of "+cbt['initiator']+". Sending back the CBT\n"
 
-        print "Modue C3 exiting"
-        f = open('abc.txt','w')
-        f.write("test")
-        f.close()
+                cbt['recipient'] = cbt['initiator']
+                cbt['initiator'] = "ModuleC3"
+
+                # Submit the CBT to CFx with ModuleA1 as the recipient
+                self.cfxObject.submitCBT(cbt)
+
+            else:
+                # If CBT was from CFx, just strip "C3"
+                cbt['data'] = cbt['data'].strip("C3")
+                print "ModuleC3: Finished Processing the CBT \n"
+
+        print "Module C3 exiting"
 
     # This module sets the stop flag, and the CM will no longer
     # call getCBT().

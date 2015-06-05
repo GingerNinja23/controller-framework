@@ -1,5 +1,6 @@
 {	
 	"CFx" :  {"Param1": "example1", "Param2": "example2", "Param3": "example3"},
 	"ModuleA1" :  {"Param1": "example1", "Param2": "example2", "Param3": "example3"},	
-	"ModuleC3" :  {"Param1": "example1", "Param2": "example2", "Param3": "example3"}
+	"ModuleC3" :  {"Param1": "example1", "Param2": "example2", "Param3": "example3"},
+	"cbtModule" :  {"Param1": "example1", "Param2": "example2", "Param3": "example3"}
 }

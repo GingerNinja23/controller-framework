@@ -30,23 +30,12 @@ class CFX(object):
 
             self.threadList = []
 
-            self.__initialize()
-
     def getCBT(self,moduleName):
 
         # Get CBT from the Queue. Exception is raised if queue is empty
+        cbt = self.queueDict[moduleName].get()
 
-        try:
-            cbt = self.queueDict[moduleName].get(False)
-            
-            # Add the CBT to the pendingCBT dict of the module
-            self.__addToPendingDict(cbt,moduleName)
-
-            return cbt
-
-        except:
-            return None
-
+        return cbt
 
     def submitCBT(self,CBT):
 
@@ -56,68 +45,34 @@ class CFX(object):
         # Put the CBT in appropriate queue
         self.queueDict[recipient].put(CBT)
 
-    def __addToPendingDict(self,CBT,moduleName):
-
-        # This is a private method, and cannot be called by the CMs
+    def addToPendingDict(self,CBT,moduleName):
 
         # Put the CBT in pendingCBT dict with UID of the CBT as the key.
         self.pendingDict[moduleName][CBT['uid']] = CBT
 
-    def __initialize(self,):
+    def initialize(self,):
 
-        # This is a private method, and cannot be called by the CMs
+        print "CFx Loaded. Initializing Modules\n"
 
-        try:
-            print "CFx Loaded. Initializing Modules\n"
+        # Iterating through the modules mentioned in config.json
+        for key in self.json_data:
+            if (key != 'CFx'):
+                self.queueDict[key] = Queue.Queue() # Create housekeeping structures
+                self.pendingDict[key] = {} # Create housekeeping structures
 
-            # Iterating through the modules mentioned in config.json
-            for key in self.json_data:
-                if (key != 'CFx'):
-                    self.queueDict[key] = Queue.Queue() # Create housekeeping structures
-                    self.pendingDict[key] = {} # Create housekeeping structures
+                module = importlib.import_module(key) # Dynamically importing the modules
+                class_ = getattr(module,key) # Get the class with name key from module
 
-                    module = importlib.import_module(key) # Dynamically importing the modules
-                    class_ = getattr(module,key) # Get the class with name key from module
-
-                    # Instantiate the class, with CFx object reference and configuration parameters
-                    instance = class_(self,self.json_data[key])
-                    self.moduleInstances[key] = instance
-
-                    # Sample CBT. Action is to strip the substring "C3" or "A1"
-                    # from the data by the respective module. But if data starts with "C3"
-                    # then ModuleA1 can't strip it until ModuleC3 does. So ModuleA1
-                    # requests ModuleC3 to strip "C3" by issuing a CBT
-                    cbt = {
-                            'uid': random.randint(1000,9999),
-                            'initiator':'CFx',
-                            'recipient':key,
-                            'action':'strip',
-                            'data':'C3A1'
-                    }
-
-                    self.queueDict[key].put(cbt) # Queue the CBT in appropriate queue
-
-                    # Run the main processing function of the module on a different thread.
-                    thread = Thread(target = self.__thread_function,args=(instance,))
-                    thread.setDaemon(True)
-                    self.threadList.append(thread)
-                    thread.start()
-
-            # This works on Linux Only
-            #for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGHUP, signal.SIGQUIT]: 
-                #signal.signal(sig, self.__handler)
+                # Instantiate the class, with CFx object reference and configuration parameters
+                instance = class_(self,self.json_data[key])
+                self.moduleInstances[key] = instance
 
 
-            # Prevent main thread from exiting.
-            while True:
-                time.sleep(1)
-
-        # Gracefully terminate the controller when SIGINT is raised
-        # or sys.exit() is called
-        except KeyboardInterrupt,SystemExit:
-            print 'Shutdown signal received, terminating the controller'
-            self.__terminate()
-            sys.exit(0)
+                # Run the main processing function of the module on a different thread.
+                thread = Thread(target = self.__thread_function,args=(instance,))
+                thread.setDaemon(True)
+                self.threadList.append(thread)
+                thread.start()
 
     def __thread_function(self,instance):
 
@@ -126,27 +81,50 @@ class CFX(object):
         # Run the main processing function of the module on a different thread.
         instance.processCBT()
 
+    def waitForShutdownEvent(self):
+
+        # This works on Linux Only
+        #for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGHUP, signal.SIGQUIT]: 
+        #signal.signal(sig, self.__handler)
+
+        while(True):
+            try:
+                time.sleep(1)
+            except KeyboardInterrupt,SystemExit:
+                print 'Shutdown signal received, terminating the controller\n'
+                break
+
+    def terminate(self):
+
+        # This method calls the terminate methods of all the CMs and 
+        # waits for all the threads to exit.
+        for key in self.moduleInstances:
+            self.moduleInstances[key].terminate()
+        for key in self.queueDict:
+            terminateCBT = {
+                    'uid': random.randint(1000,9999),
+                    'initiator':'CFx',
+                    'recipient':key,
+                    'action':'TERMINATE',
+                    'data':''
+            }
+            self.queueDict[key].put(terminateCBT)
+        for thread in self.threadList:
+            thread.join()
+        sys.exit(0)
+
     def __handler(signum = None, frame = None):
 
         # This is a private method, and cannot be called by the CMs
 
         print 'Signal handler called with signal', signum
-        self.__terminate()
-        # Exit the main thread
-        sys.exit(0)
-
-    def __terminate(self):
-        
-        # This is a private method, and cannot be called by the CMs
-        # This method calls the terminate methods of all the CMs and 
-        # waits for all the threads to exit.
-        for key in self.moduleInstances:
-            self.moduleInstances[key].terminate()
-        for thread in self.threadList:
-            thread.join()
+        self.terminate()
 
 def main():
     CFx = CFX()
+    CFx.initialize()
+    CFx.waitForShutdownEvent()
+    CFx.terminate()
 
 if __name__ == "__main__":
     main()
