@@ -1,20 +1,32 @@
 import time
+import threading
 from ControllerModule import ControllerModule
-
 
 # Sample Controller Module 2
 # ControllerModule is an abstract class
 class ModuleC3(ControllerModule):
 
     def __init__(self,cfxObject,paramDict):
+
+        # A flag to check if the terminate method has been called
+        self.stop = threading.Event()
+
         self.cfxObject = cfxObject
         self.paramDict = paramDict
 
     def processCBT(self): # Main processing loop
-        print  "Module C3 Loaded\n"
-        while(True): # Polling approach
+        print  "ModuleC3 Loaded\n"
+
+        # The CM continues to process CBTs until the stop flag
+        # is set. Once the stop flag is set, the CM finishes processing
+        # the current CBT and then exits
+        cbt = None
+        while(not self.stop.is_set()):
             time.sleep(2)
-            cbt = self.cfxObject.getCBT("ModuleC3")
+            try:
+                cbt = self.cfxObject.getCBT("ModuleC3")
+            except:
+                pass
             if(cbt):
                 print "Module C3: CBT received " + str(cbt)+"\n"
                 # Process the CBT here
@@ -37,5 +49,15 @@ class ModuleC3(ControllerModule):
                     # If CBT was from CFx, just strip "C3"
                     cbt['data'] = cbt['data'].strip("C3")
                     print "ModuleC3: Finished Processing the CBT from CFx\n"
+
+        print "Modue C3 exiting"
+        f = open('abc.txt','w')
+        f.write("test")
+        f.close()
+
+    # This module sets the stop flag, and the CM will no longer
+    # call getCBT().
+    def terminate(self):
+        self.stop.set()
 
 
