@@ -50,7 +50,7 @@ class ModuleC3(ControllerModule):
                     cbt['data'] = cbt['data'].strip("C3")
                     print "ModuleC3: Finished Processing the CBT from CFx\n"
 
-        print "Modue C3 exiting"
+        print "Module C3 exiting"
         f = open('abc.txt','w')
         f.write("test")
         f.close()
