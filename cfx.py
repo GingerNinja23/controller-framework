@@ -122,7 +122,10 @@ class CFX(object):
         print 'Signal handler called with signal', signum
         self.terminate()
 
+
     def createCBT(self):
+
+        # Return an empty CBT
         CBT = {
                 'uid': random.randint(1000,9999),
                 'initiator':'',
@@ -133,6 +136,9 @@ class CFX(object):
         return CBT
 
     def inPendingDict(self,CBT,moduleName):
+
+        # Check if the given CBT is present in the pendingCBT dict
+        # of the module given by moduleName
         if(CBT['uid'] in self.pendingDict[moduleName]):
             return True
         else:
