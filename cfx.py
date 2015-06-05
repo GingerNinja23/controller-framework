@@ -100,15 +100,16 @@ class CFX(object):
         # waits for all the threads to exit.
         for key in self.moduleInstances:
             self.moduleInstances[key].terminate()
+
         for key in self.queueDict:
-            terminateCBT = {
-                    'uid': random.randint(1000,9999),
-                    'initiator':'CFx',
-                    'recipient':key,
-                    'action':'TERMINATE',
-                    'data':''
-            }
+            
+            # Create a special terminate CBT to terminate the CMs
+            terminateCBT = self.createCBT()
+            terminateCBT['initiator'] = 'CFx'
+            terminateCBT['recipient'] = key
+            terminateCBT['action'] = 'TERMINATE'
             self.queueDict[key].put(terminateCBT)
+
         for thread in self.threadList:
             thread.join()
         sys.exit(0)
@@ -119,6 +120,17 @@ class CFX(object):
 
         print 'Signal handler called with signal', signum
         self.terminate()
+
+    def createCBT(self):
+        CBT = {
+                'uid': random.randint(1000,9999),
+                'initiator':'',
+                'recipient':'',
+                'action':'',
+                'data':''
+        }
+        return CBT
+
 
 def main():
     CFx = CFX()

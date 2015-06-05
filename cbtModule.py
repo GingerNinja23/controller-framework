@@ -1,5 +1,4 @@
 import time
-import random
 import threading
 from ControllerModule import ControllerModule
 
@@ -27,17 +26,15 @@ class cbtModule(ControllerModule):
 
         cbtA1 = self.cfxObject.createCBT()
         cbtA1['initiator'] = 'cbtModule'
-        cbtA1['recipient'] = 'ModuleC3'
+        cbtA1['recipient'] = 'ModuleA1'
         cbtA1['action'] = 'strip'
         cbtA1['data'] = 'C3A1'
 
-        cbtC3 = {
-        'uid': random.randint(1000,9999),
-        'initiator':'cbtModule',
-        'recipient':'ModuleC3',
-        'action':'strip',
-        'data':'C3A1'
-        }
+        cbtC3 = self.cfxObject.createCBT()
+        cbtC3['initiator'] = 'cbtModule'
+        cbtC3['recipient'] = 'ModuleC3'
+        cbtC3['action'] = 'strip'
+        cbtC3['data'] = 'C3A1'
 
         self.cfxObject.submitCBT(cbtA1)
         self.cfxObject.submitCBT(cbtC3)

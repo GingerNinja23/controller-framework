@@ -29,12 +29,15 @@ class ModuleA1(ControllerModule):
             # Analyse CBT. If heavy, run it on another thread
 
             # If data starts with C3, ask ModuleC3 to strip "C3" first
-            if cbt['data'].startswith("C3"): 
-                cbt['initiator'] = "ModuleA1"
-                cbt['recipient'] = "ModuleC3"
+            if cbt['data'].startswith("C3"):
+                newCBT = self.cfxObject.createCBT() 
+                newCBT['initiator'] = "ModuleA1"
+                newCBT['recipient'] = "ModuleC3"
+                newCBT['action'] = 'strip'
+                newCBT['data'] = cbt['data']
                 
                 # Issue CBT to CFx with ModuleC3 as recipient
-                self.cfxObject.submitCBT(cbt)
+                self.cfxObject.submitCBT(newCBT)
 
                 self.cfxObject.addToPendingDict(cbt,"ModuleA1")
 
