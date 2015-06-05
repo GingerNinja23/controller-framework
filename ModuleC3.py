@@ -23,6 +23,7 @@ class ModuleC3(ControllerModule):
 
         while(not self.stop.is_set()):
             time.sleep(2)
+<<<<<<< HEAD
             cbt = self.cfxObject.getCBT("ModuleC3")
             print "Module C3: CBT received " + str(cbt)+"\n"
             # Process the CBT here
@@ -50,6 +51,39 @@ class ModuleC3(ControllerModule):
                 print "ModuleC3: Finished Processing the CBT \n"
 
         print "Module C3 exiting"
+=======
+            try:
+                cbt = self.cfxObject.getCBT("ModuleC3")
+            except:
+                pass
+            if(cbt):
+                print "Module C3: CBT received " + str(cbt)+"\n"
+                # Process the CBT here
+                # Analyse CBT. If heavy, run it on another thread
+    
+                # If the request to strip C3 was from another module,
+                # strip "C3" and notify it back.
+                if(cbt['initiator']!='CFx'):
+                    cbt['data'] = cbt['data'].strip("C3")
+                    print "ModuleC3: Finished servicing the request",\
+                            "of "+cbt['initiator']+". Sending back the CBT\n"
+
+                    cbt['recipient'] = cbt['initiator']
+                    cbt['initiator'] = "ModuleC3"
+
+                    # Submit the CBT to CFx with ModuleA1 as the recipient
+                    self.cfxObject.submitCBT(cbt)
+
+                else:
+                    # If CBT was from CFx, just strip "C3"
+                    cbt['data'] = cbt['data'].strip("C3")
+                    print "ModuleC3: Finished Processing the CBT from CFx\n"
+
+        print "Module C3 exiting"
+        f = open('abc.txt','w')
+        f.write("test")
+        f.close()
+>>>>>>> 3373df633f0181d05a619cb13bcb11e886162509
 
     # This module sets the stop flag, and the CM will no longer
     # call getCBT().

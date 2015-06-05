@@ -25,13 +25,11 @@ class cbtModule(ControllerModule):
         # then ModuleA1 can't strip it until ModuleC3 does. So ModuleA1
         # requests ModuleC3 to strip "C3" by issuing a CBT
 
-        cbtA1 = {
-        'uid': random.randint(1000,9999),
-        'initiator':'cbtModule',
-        'recipient':'ModuleA1',
-        'action':'strip',
-        'data':'C3A1'
-        }
+        cbtA1 = self.cfxObject.createCBT()
+        cbtA1['initiator'] = 'cbtModule'
+        cbtA1['recipient'] = 'ModuleC3'
+        cbtA1['action'] = 'strip'
+        cbtA1['data'] = 'C3A1'
 
         cbtC3 = {
         'uid': random.randint(1000,9999),
