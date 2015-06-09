@@ -80,11 +80,16 @@ class CFX(object):
 
                 if(interval != "NONE"):
                     timer_enabled = True
+
                     try:
                         interval = int(interval)
+                        
                     except:
-                        print "Invalid timer configuration for "+key+" Timer is disabled for this module"
+
+                        print "Invalid timer configuration for "+key+\
+                        ". Timer is disabled for this module"
                         timer_enabled = False
+
                 else:
                     timer_enabled = False
 
