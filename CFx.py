@@ -22,8 +22,7 @@ class CFX(object):
             # A dict of all the queues. Module name is the key
             # and the value is the queue
             self.queueDict = {} 
-            # A dict of all the pending CBT dictionaries
-            self.pendingDict = {}
+
             # A dict containing the references to all modules
             self.moduleInstances = {} 
             # All the above dicts have the module name as the key
@@ -55,8 +54,7 @@ class CFX(object):
         # Iterating through the modules mentioned in config.json
         for key in self.json_data:
             if (key != 'CFx'):
-                self.queueDict[key] = Queue.Queue() # Create housekeeping structures
-                self.pendingDict[key] = {} # Create housekeeping structures
+                self.queueDict[key] = Queue.Queue() # Create CBT queue for the module
 
                 module = importlib.import_module(key) # Dynamically importing the modules
                 class_ = getattr(module,key) # Get the class with name key from module
@@ -83,7 +81,7 @@ class CFX(object):
 
                     try:
                         interval = int(interval)
-                        
+
                     except:
 
                         print "Invalid timer configuration for "+key+\
