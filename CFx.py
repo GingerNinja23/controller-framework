@@ -1,43 +1,33 @@
 #!/usr/bin/env python
 import sys
 import json
-import Queue
-import time
 import signal
+import threading
 import importlib
 from CBT import CBT as _CBT
-from threading import Thread
+from CFxHandle import CFxHandle
 
 
 class CFX(object):
 
     def __init__(self):
 
-        with open('config.json') as data_file:    
+        with open('config.json') as data_file:
             self.json_data = json.load(data_file) # Read config.json
 
             # CFx parameters retrieved from config.json
             self.cfxParameterDict = self.json_data['CFx']
 
-            # A dict of all the queues. Module name is the key
-            # and the value is the queue
-            self.queueDict = {} 
-
-            # A dict containing the references to all modules
-            self.moduleInstances = {} 
-            # All the above dicts have the module name as the key
+            # A dict containing the references to CFxHandles of all CMs
+            # Key is the module name 
+            self.CFxHandleDict = {} 
 
             # This list contains all the threads that the CFx needs 
             # to wait for (by calling join() on them) before exiting
-            self.threadList = []
+            self.joinThreadList = []
 
-    def getCBT(self,moduleName):
-
-        # Get CBT from the Queue. This is a blocking call and will block the
-        # calling thread until an item is put into the corresponding Queue
-        cbt = self.queueDict[moduleName].get()
-
-        return cbt
+            # All the threads that are to be started by the CFx
+            self.startThreadList = []
 
     def submitCBT(self,CBT):
 
@@ -45,7 +35,7 @@ class CFX(object):
         recipient = CBT.recipient
 
         # Put the CBT in appropriate queue
-        self.queueDict[recipient].put(CBT)
+        self.CFxHandleDict[recipient].CMQueue.put(CBT)
 
     def initialize(self,):
 
@@ -54,64 +44,28 @@ class CFX(object):
         # Iterating through the modules mentioned in config.json
         for key in self.json_data:
             if (key != 'CFx'):
-                self.queueDict[key] = Queue.Queue() # Create CBT queue for the module
 
                 module = importlib.import_module(key) # Dynamically importing the modules
                 class_ = getattr(module,key) # Get the class with name key from module
 
-                # Instantiate the class, with CFx object reference and configuration parameters
-                instance = class_(self,self.json_data[key])
-                self.moduleInstances[key] = instance
+                _CFxHandle = CFxHandle(self) # Create a CFxHandle object for each module
 
+                # Instantiate the class, with CFxHandle reference and configuration parameters
+                instance = class_(_CFxHandle,self.json_data[key])
 
-                # Run the main processing function of the module on a different thread.
-                thread = Thread(target = self.__worker,args=(instance,))
-                thread.setDaemon(True)
+                _CFxHandle.CMInstance = instance
+                _CFxHandle.CMConfig = self.json_data[key]
 
-                # Read config.json and add the threads to the list accordingly
-                if(self.json_data[key]['CBTterminate'] == 'False'):
-                    self.threadList.append(thread)
+                # Store the CFxHandle object references in the dict with module name as the key
+                self.CFxHandleDict[key] = _CFxHandle
 
-                thread.start()
+        # Intialize all the CFxHandles which in turn initializes the CMs
+        for key in self.CFxHandleDict:
+            self.CFxHandleDict[key].initialize()
 
-                interval = self.json_data[key]['timer_interval']
-
-                if(interval != "NONE"):
-                    timer_enabled = True
-
-                    try:
-                        interval = int(interval)
-
-                    except:
-
-                        print "Invalid timer configuration for "+key+\
-                        ". Timer is disabled for this module"
-                        timer_enabled = False
-
-                else:
-                    timer_enabled = False
-
-                if(timer_enabled):
-
-                    timer_thread = Thread(target = self.__timer_worker,args=(instance,interval,))
-                    timer_thread.setDaemon(True)
-                    timer_thread.start()
-
-    def __worker(self,instance):
-
-        # This is a private method, and cannot be called by the CMs
-
-        # Run the main processing function of the module on a different thread.
-        instance.processCBT()
-
-    def __timer_worker(self,instance,interval):
-
-        # Call the timer_method of CMs at a given freqeuency
-
-        while(True):
-            time.sleep(interval)
-            instance.timer_method()
-
+        # Start all the worker threads
+        for thread in self.startThreadList:
+            thread.start()
 
     def waitForShutdownEvent(self):
 
@@ -119,16 +73,18 @@ class CFX(object):
         #for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGHUP, signal.SIGQUIT]: 
         #signal.signal(sig, self.__handler)
 
+        # Wait for a KeyboardInterrupt or the exception caused by sys.exit()
+        event = threading.Event()
         while(True):
             try:
-                time.sleep(1)
+                event.wait(0.1)
             except KeyboardInterrupt,SystemExit:
                 print 'Shutdown signal received, terminating the controller\n'
                 break
 
     def terminate(self):
 
-        for key in self.queueDict:
+        for key in self.CFxHandleDict:
 
             # Create a special terminate CBT to terminate all the CMs
             terminateCBT = self.createCBT()
@@ -137,11 +93,12 @@ class CFX(object):
             terminateCBT.action = 'TERMINATE'
 
             # Clear all the queues and put the terminate CBT in all the queues
-            self.queueDict[key].queue.clear()
+            self.CFxHandleDict[key].CMQueue.queue.clear()
 
-            self.queueDict[key].put(terminateCBT)
+            self.submitCBT(terminateCBT)
 
-        for thread in self.threadList:
+        # Wait for the threads to process their current CBTs
+        for thread in self.joinThreadList:
             thread.join()
 
         sys.exit(0)

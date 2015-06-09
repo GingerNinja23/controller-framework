@@ -10,9 +10,3 @@ class CBT(object):
         self.action = ''
         self.data = ''
 
-
-
-
-
-
-
