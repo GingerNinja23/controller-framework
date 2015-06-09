@@ -8,11 +8,9 @@ class cbtModule(ControllerModule):
 
     def __init__(self,cfxObject,paramDict):
 
-        # A flag to check if the terminate method has been called
-        self.stop = threading.Event()
-
         self.cfxObject = cfxObject
         self.paramDict = paramDict
+        self.pendingCBT = {}
 
     def processCBT(self): # Main processing loop
         print  "cbtModule Loaded\n"
@@ -25,39 +23,37 @@ class cbtModule(ControllerModule):
         # requests ModuleC3 to strip "C3" by issuing a CBT
 
         cbtA1 = self.cfxObject.createCBT()
-        cbtA1['initiator'] = 'cbtModule'
-        cbtA1['recipient'] = 'ModuleA1'
-        cbtA1['action'] = 'strip'
-        cbtA1['data'] = 'C3A1'
-
-        cbtC3 = self.cfxObject.createCBT()
-        cbtC3['initiator'] = 'cbtModule'
-        cbtC3['recipient'] = 'ModuleC3'
-        cbtC3['action'] = 'strip'
-        cbtC3['data'] = 'C3A1'
+        cbtA1.initiator = 'cbtModule'
+        cbtA1.recipient = 'ModuleA1'
+        cbtA1.action = 'strip'
+        cbtA1.data = 'C3A1'
 
         self.cfxObject.submitCBT(cbtA1)
+
+        cbtC3 = self.cfxObject.createCBT()
+        cbtC3.initiator = 'cbtModule'
+        cbtC3.recipient = 'ModuleC3'
+        cbtC3.action = 'strip'
+        cbtC3.data = 'C3A1'
+
         self.cfxObject.submitCBT(cbtC3)
 
         # The CM continues to process CBTs until the stop flag
         # is set. Once the stop flag is set, the CM finishes processing
         # the current CBT and then exits
 
-        while(not self.stop.is_set()):
+        while(True):
             time.sleep(2)
             cbt = self.cfxObject.getCBT("cbtModule")
             print "cbtModule: CBT received " + str(cbt)+"\n"
+
+            if(cbt.action=='TERMINATE'):
+                break
             # Process the CBT here
             # Analyse CBT. If heavy, run it on another thread
             print "cbtModule: Finished Processing the CBT \n"
 
         print "cbtModule exiting"
 
-    # This module sets the stop flag, and the CM will no longer
-    # call getCBT().
-    def terminate(self):
-        self.stop.set()
-
-
-
-
+    def timer_method(self):
+        pass
