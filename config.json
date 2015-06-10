@@ -1,5 +1,7 @@
 {	
 	"CFx" :  {"Param1": "example1", "Param2": "example2", "Param3": "example3"},
-	"ModuleA1" :  {"Param1": "example1", "Param2": "example2", "Param3": "example3"},	
-	"ModuleC3" :  {"Param1": "example1", "Param2": "example2", "Param3": "example3"}
+	"ModuleA1" :  {"timer_interval" : "10", "CBTterminate" : "True", "Param3" : "example3"},	
+	"ModuleC3" :  {"timer_interval" : "8", "CBTterminate" : "False", "Param3" : "example3"},
+	"cbtModule" : {"timer_interval" : "NA", "CBTterminate": "True", "Param3" : "example3"}
 }
+
