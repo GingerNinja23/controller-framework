@@ -20,20 +20,10 @@ class cbtModule(ControllerModule):
         # then ModuleA1 can't strip it until ModuleC3 does. So ModuleA1
         # requests ModuleC3 to strip "C3" by issuing a CBT
 
-        cbtA1 = self.CFxHandle.createCBT()
-        cbtA1.initiator = 'cbtModule'
-        cbtA1.recipient = 'ModuleA1'
-        cbtA1.action = 'strip'
-        cbtA1.data = 'C3A1'
-
+        cbtA1 = self.CFxHandle.createCBT('cbtModule','ModuleA1','strip','C3A1')
         self.CFxHandle.submitCBT(cbtA1)
 
-        cbtC3 = self.CFxHandle.createCBT()
-        cbtC3.initiator = 'cbtModule'
-        cbtC3.recipient = 'ModuleC3'
-        cbtC3.action = 'strip'
-        cbtC3.data = 'C3A1'
-
+        cbtC3 = self.CFxHandle.createCBT('cbtModule','ModuleC3','strip','C3A1')
         self.CFxHandle.submitCBT(cbtC3)
 
     def processCBT(self,cbt): 

@@ -10,6 +10,8 @@ class CFxHandle(object):
         self.CMThread = None # CM worker thread
         self.CMConfig = None # Config of the CM from config.json
         self.__CFxObject = CFxObject # CFx object reference
+        self.joinEnabled = False
+        self.timer_thread = None
 
     def __getCBT(self):
 
@@ -21,11 +23,11 @@ class CFxHandle(object):
         # Submit to CFx which then submits it to the appropriate CM
         self.__CFxObject.submitCBT(cbt) 
 
-    def createCBT(self):
+    def createCBT(self,initiator='',recipient='',action='',data=''):
 
         # Create and return an empty CBT. The variables of the CBT 
         # will be assigned by the CM
-        cbt = self.__CFxObject.createCBT()
+        cbt = self.__CFxObject.createCBT(initiator,recipient,action,data)
         return cbt
 
     def freeCBT(self):
@@ -43,11 +45,10 @@ class CFxHandle(object):
         # CFx will then start all the threads
         self.CMThread = threading.Thread(target = self.__worker)
         self.CMThread.setDaemon(True)
-        self.__CFxObject.startThreadList.append(self.CMThread)
 
         # Check whether CM requires join() or not
         if(self.CMConfig['CBTterminate'] == 'False'):
-            self.__CFxObject.joinThreadList.append(self.CMThread)
+            self.joinEnabled = True
 
         # Check if the CMConfig has timer_interval specified
         # If not then assume timer functionality not required
@@ -73,9 +74,8 @@ class CFxHandle(object):
         if(timer_enabled):
 
             # Create timer worker thread
-            timer_thread = threading.Thread(target = self.__timer_worker,args=(interval,))
-            timer_thread.setDaemon(True)
-            self.__CFxObject.startThreadList.append(timer_thread)
+            self.timer_thread = threading.Thread(target = self.__timer_worker,args=(interval,))
+            self.timer_thread.setDaemon(True)
 
     def __worker(self):
         
