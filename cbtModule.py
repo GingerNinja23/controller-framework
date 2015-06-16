@@ -9,7 +9,7 @@ class cbtModule(ControllerModule):
         self.CFxHandle = CFxHandle
         self.paramDict = paramDict
         self.pendingCBT = {}
-        self.cbtTestCases = []
+        self.cbtTestCases = [] # List for test CBTs
 
     def initialize(self):
 
