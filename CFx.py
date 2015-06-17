@@ -54,9 +54,8 @@ class CFX(object):
                 # Store the CFxHandle object references in the dict with module name as the key
                 self.CFxHandleDict[key] = _CFxHandle
 
-        for handle in self.CFxHandleDict:
-            # Intialize all the CFxHandles which in turn initialize the CMs
-            self.CFxHandleDict[handle].initialize()
+                # Intialize all the CFxHandles which in turn initialize the CMs    
+                _CFxHandle.initialize()
 
         # Start all the worker threads
         for handle in self.CFxHandleDict:
