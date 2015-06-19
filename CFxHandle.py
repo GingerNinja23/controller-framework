@@ -65,7 +65,7 @@ class CFxHandle(object):
                 interval = int(interval)
             except:
                 print "Invalid timer configuration for "+key+\
-                ". Timer is disabled for this module"
+                      ". Timer is disabled for this module"
                 timer_enabled = False
 
         else:
@@ -74,7 +74,8 @@ class CFxHandle(object):
         if(timer_enabled):
 
             # Create timer worker thread
-            self.timer_thread = threading.Thread(target = self.__timer_worker,args=(interval,))
+            self.timer_thread = threading.Thread(target = self.__timer_worker,\
+                                                 args=(interval,))
             self.timer_thread.setDaemon(True)
 
     def __worker(self):

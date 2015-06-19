@@ -43,7 +43,7 @@ class ModuleB2(ControllerModule):
                 cbt.initiator,cbt.recipient = cbt.recipient,cbt.initiator
                 self.CFxHandle.submitCBT(cbt)
                 print "ModuleB2 : Finished servicing request of "+cbt.recipient+\
-                ". Sending back the CBT\n"
+                      ". Sending back the CBT\n"
 
             # If pointer does not point to last CBT, submit a CBT to the 
             # module next in the path list
@@ -51,7 +51,7 @@ class ModuleB2(ControllerModule):
                 cbt.data[-1] += 1 
                 
                 newCBT = self.CFxHandle.createCBT("ModuleB2","Module"+cbt.data[cbt.data[-1]],\
-                    'path',cbt.data) 
+                                                  'path',cbt.data)
                 
                 # Issue CBT to CFx with the next Module in the list as recipient
                 self.CFxHandle.submitCBT(newCBT)
