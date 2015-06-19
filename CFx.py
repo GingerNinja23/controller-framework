@@ -185,7 +185,7 @@ class CFX(UdpServer):
 
 def main():
 
-	parse_config()
+    parse_config()
     CFx = CFX()
     set_global_variable_server(CFx)
     # Ignore Status reporting for now
