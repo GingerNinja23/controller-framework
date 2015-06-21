@@ -3,6 +3,7 @@ import os
 import sys
 import json
 import signal
+import socket
 import threading
 import importlib
 import logging
@@ -10,7 +11,7 @@ from ipoplib import *
 from CBT import CBT as _CBT
 from CFxHandle import CFxHandle
 
-class CFX(UdpServer):
+class CFX(object):
 
     def __init__(self):
 
@@ -28,10 +29,26 @@ class CFX(UdpServer):
         self.ip4 = CONFIG["ip4"]
         self.uid = gen_uid(self.ip4) # SHA-1 hash
         self.vpn_type = "GroupVPN"
-
+        self.ipop_state = {}
+        self.peers = {}
+        self.peers_ip4 = {}
+        self.peers_ip6 = {}
+        self.far_peers = {}
+        self.conn_stat = {}
+        if socket.has_ipv6:
+            self.sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+            self.sock_svr = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+            self.sock_svr.bind((CONFIG["localhost6"], CONFIG["contr_port"]))
+        else:
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.sock_svr = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.sock_svr.bind((CONFIG["localhost"], CONFIG["contr_port"]))
+        self.sock.bind(("", 0))
+        self.sock_list = [ self.sock, self.sock_svr ]
         self.uid_ip_table = {}
         parts = CONFIG["ip4"].split(".")
         ip_prefix = parts[0] + "." + parts[1] + "."
+
         # Populating the uid_ip_table with all the IPv4 addresses
         # and the corresponding UIDs in the /16 subnet
         for i in range(0, 255):
@@ -39,9 +56,6 @@ class CFX(UdpServer):
                 ip = ip_prefix + str(i) + "." + str(j)
                 uid = gen_uid(ip)
                 self.uid_ip_table[uid] = ip
-
-        UdpServer.__init__(self, self.user, self.password, self.host, self.ip4)
-
 
     def submitCBT(self,CBT):
 
