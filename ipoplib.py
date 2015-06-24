@@ -72,11 +72,6 @@ null_uid += "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 bc_mac = "\xff\xff\xff\xff\xff\xff"
 null_mac = "\x00\x00\x00\x00\x00\x00"
 
-# PKTDUMP mode is for more detailed than debug logging, especially for dump
-# packet contents in hexadecimal to log
-logging.addLevelName(5, "PKTDUMP")
-logging.PKTDUMP = 5
-
 # server is cross-module(?) variable
 server = None
 
@@ -103,20 +98,6 @@ def set_global_variable_server(s):
 # signal.signal(signal.SIGQUIT, exit_handler)
 #signal.signal(signal.SIGTERM, exit_handler)
 
-def pktdump(message, dump=None, *args, **argv):
-    hext = ""
-    if dump: 
-        for i in range(0, len(dump),2):
-            hext += dump[i:i+2].encode("hex")
-            hext += " "
-            if i % 16 == 14:
-                hext += "\n"
-        logging.log(5, message + "\n" + hext)
-    else: 
-        logging.log(5, message, *args, **argv)
-
-logging.pktdump = pktdump
- 
 def ip6_a2b(str_ip6):
     return "".join(x.decode("hex") for x in str_ip6.split(':'))
 
@@ -344,10 +325,6 @@ def parse_config():
         keyring.set_password("ipop", CONFIG["xmpp_username"],CONFIG["xmpp_password"])
     except:
         raise RuntimeError("Unable to store password in keyring")
-
-    if "controller_logging" in CONFIG:
-        level = getattr(logging, CONFIG["controller_logging"])
-        logging.basicConfig(level=level)
 
     if args.ip_config:
         load_peer_ip_config(args.ip_config)

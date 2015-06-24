@@ -6,7 +6,6 @@ import signal
 import socket
 import threading
 import importlib
-import logging
 from ipoplib import *
 from CBT import CBT as _CBT
 from CFxHandle import CFxHandle
@@ -48,14 +47,6 @@ class CFX(object):
         self.uid_ip_table = {}
         parts = CONFIG["ip4"].split(".")
         ip_prefix = parts[0] + "." + parts[1] + "."
-
-        # Populating the uid_ip_table with all the IPv4 addresses
-        # and the corresponding UIDs in the /16 subnet
-        for i in range(0, 255):
-            for j in range(0, 255):
-                ip = ip_prefix + str(i) + "." + str(j)
-                uid = gen_uid(ip)
-                self.uid_ip_table[uid] = ip
 
     def submitCBT(self,CBT):
 
@@ -201,7 +192,6 @@ def main():
 
     parse_config()
     CFx = CFX()
-    set_global_variable_server(CFx)
     # Ignore Status reporting for now
 
     CFx.initialize()
