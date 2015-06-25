@@ -38,6 +38,3 @@ class TincanListener(ControllerModule):
                                                         action='TINCAN_PKT',data=data)
                 self.CFxHandle.submitCBT(tincanPacket)
 
-
-
-

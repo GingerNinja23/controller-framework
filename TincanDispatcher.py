@@ -52,11 +52,15 @@ class TincanDispatcher(ControllerModule):
                   dest_addr=addr[0], dest_port=addr[1], payload=None,\
                   type="echo_reply") # Reply to the echo_request 
 
-            if msg_type == "local_state":
+            elif msg_type == "local_state":
                 self.CFxObject.ipop_state = msg
 
-            elif msg_type == "peer_state" or msg_type == "con_stat" or \
-                 msg_type == "con_req" or msg_type == "con_resp":
+            elif msg_type == "peer_state":
+                newCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',\
+                                                  recipient='Monitor',action='STORE_PEER_STATE',data=msg)
+                self.CFxHandle.submitCBT(newCBT)
+
+            elif msg_type == "con_stat" or msg_type == "con_req" or msg_type == "con_resp":
 
                 newCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',\
                                                   recipient='BaseTopologyManager',action='TINCAN_MSG',data=msg)
@@ -100,12 +104,6 @@ class TincanDispatcher(ControllerModule):
             self.create_connection_req(data[2:])
 
         else:
-            logging.error("Unknown type message")
-            logging.debug("{0}".format(data[0:].encode("hex")))
-            sys.exit()
-
-
-        else:
             logCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',recipient='Logger',\
                                               action='error',data="Unknown type message")
             self.CFxHandle.submitCBT(logCBT)
@@ -116,3 +114,4 @@ class TincanDispatcher(ControllerModule):
 
     def timer_method(self):
         pass
+
