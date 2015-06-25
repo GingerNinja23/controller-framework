@@ -55,3 +55,5 @@ class TincanHandler(ControllerModule):
             logging.log(5, message + "\n" + hext)
         else: 
             logging.log(5, message, *args, **argv)
+
+            

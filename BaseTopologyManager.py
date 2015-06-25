@@ -54,8 +54,9 @@ class BaseTopologyManager(ControllerModule):
 
         else:
             logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Logger',\
-                                              action='warning',data="BaseTopologyManager: Invalid CBT received from "\
-                                              +cbt.initiator)
+                                              action='warning'\
+                                              ,data="BaseTopologyManager: Invalid CBT received "\
+                                              "from "+cbt.initiator)
             self.CFxHandle.submitCBT(logCBT)
 
     def create_connection(self, uid, data, nid, sec, cas, ip4):

@@ -33,7 +33,8 @@ class Monitor(ControllerModule):
                     total_byte += stat["recv_total_bytes"]
                 msg["total_byte"]=total_byte
                 logCBT = self.CFxHandle.createCBT(initiator='Monitor',recipient='Logger',\
-                                                  action='debug',data="self.peers:{0}".format(self.CFxObject.peers))
+                                                  action='debug',\
+                                                  data="self.peers:{0}".format(self.CFxObject.peers))
                 self.CFxHandle.submitCBT(logCBT)
                 if not msg["uid"] in self.CFxObject.peers:
                     msg["last_active"]=time.time()
@@ -56,8 +57,8 @@ class Monitor(ControllerModule):
 
         else:
             logCBT = self.CFxHandle.createCBT(initiator='Monitor',recipient='Logger',\
-                                              action='error',data="Monitor: Unknown type of CBT received from: "\
-                                              +cbt.initiator)
+                                              action='error',data="Monitor: Unknown type of CBT "\
+                                              "received from: "+cbt.initiator)
 
     def timer_method(self):
         pass
@@ -68,3 +69,5 @@ class Monitor(ControllerModule):
             self.CFxObject.conn_stat[peer["uid"]] = "req_sent"
             do_send_msg(self.CFxObject.sock, "con_req", 1, peer["uid"],
                         self.CFxObject.ipop_state["_fpr"])
+
+            

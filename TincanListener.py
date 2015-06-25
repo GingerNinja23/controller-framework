@@ -34,7 +34,8 @@ class TincanListener(ControllerModule):
             if(socks):
                 sock_to_read = socks[0]
                 data, addr = sock_to_read.recvfrom(self.CFxObject.CONFIG["buf_size"])
-                tincanPacket = self.CFxHandle.createCBT(initiator='TincanListener',recipient='TincanDispatcher',\
+                tincanPacket = self.CFxHandle.createCBT(initiator='TincanListener',\
+                                                        recipient='TincanDispatcher',\
                                                         action='TINCAN_PKT',data=data)
                 self.CFxHandle.submitCBT(tincanPacket)
 

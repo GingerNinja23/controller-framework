@@ -36,7 +36,8 @@ class AddressMapper(ControllerModule):
             except KeyError:
 
                 logCBT = self.CFxHandle.createCBT(initiator='AddressMapper',recipient='Logger',\
-                                                  action='warning',data="Invalid ADD_MAPPING Configuration")
+                                                  action='warning',\
+                                                  data="Invalid ADD_MAPPING Configuration")
                 self.CFxHandle.submitCBT(logCBT)
 
         elif(cbt.action == 'DEL_MAPPING'):
@@ -75,7 +76,8 @@ class AddressMapper(ControllerModule):
 
         else:
             logCBT = self.CFxHandle.createCBT(initiator='AddressMapper',recipient='Logger',\
-                                              action='warning',data="AddressMapper: Invalid CBT received from "\
+                                              action='warning',\
+                                              data="AddressMapper: Invalid CBT received from "\
                                               +cbt.initiator)
             self.CFxHandle.submitCBT(logCBT)
 
