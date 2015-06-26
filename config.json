@@ -1,32 +1,41 @@
 {
     "CFx": {
-        "xmpp_username": "username@gmail.com",
-        "xmpp_password": "enter-password-here",
-        "xmpp_host": "talk.google.com",
+        "xmpp_username": "gingerninja@jabber.ru",
+        "xmpp_password": "ginger123",
+        "xmpp_host": "jabber.ru",
         "ip4": "192.168.5.1",
         "ip4_mask": 24,
         "stat_report": true,
         "tincan_logging": 0,
         "controller_logging": "DEBUG"
     },
-    "ModuleA1": {
+    "Logger": {
         "timer_interval": "NA",
         "CBTterminate": true,
-        "Param3": "example3"
     },
-    "ModuleB2": {
+    "TincanListener" : {
         "timer_interval": "NA",
-        "CBTterminate": false,
-        "Param3": "example3"
-    },
-    "ModuleC3": {
-        "timer_interval": "NA",
-        "CBTterminate": false,
-        "Param3": "example3"
-    },
-    "cbtModule": {
-        "timer_interval": "6",
         "CBTterminate": true,
-        "Param3": "example3"
+    },
+    "TincanDispatcher": {
+        "timer_interval": "NA",
+        "CBTterminate": true,
+    },
+    "Monitor": {
+        "timer_interval": "NA",
+        "CBTterminate": true,
+    },
+
+    "BaseTopologyManager": {
+        "timer_interval": "15",
+        "CBTterminate": true,
+    },
+    "LinkManager": {
+        "timer_interval": "NA",
+        "CBTterminate": true,
+    },
+    "AddressMapper": {
+        "timer_interval": "NA",
+        "CBTterminate": true,
     }
 }

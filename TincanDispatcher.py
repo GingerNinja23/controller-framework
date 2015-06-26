@@ -13,9 +13,10 @@ class TincanDispatcher(ControllerModule):
 
     def initialize(self):
         
-        logCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',recipient='Logger',\
-                                          action='info',data="TincanDispatcher Loaded")
-        self.CFxHandle.submitCBT(logCBT)
+        # logCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',recipient='Logger',\
+        #                                   action='info',data="TincanDispatcher Loaded")
+        # self.CFxHandle.submitCBT(logCBT)
+        print "TincanDispatcher loaded"
 
     def processCBT(self,cbt):
 
@@ -32,7 +33,8 @@ class TincanDispatcher(ControllerModule):
         #|      2       | Payload (JSON formatted control message)     |
         #---------------------------------------------------------------
 
-        data = cbt.data
+        data = cbt.data[0]
+        addr = cbt.data[1]
         if data[0] != ipop_ver:
             logCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',recipient='Logger',\
                                         action='debug',data="ipop version mismatch:"+\
@@ -92,7 +94,7 @@ class TincanDispatcher(ControllerModule):
             # Ignore IPv6 packets for log readability. Most of them are
             # Multicast DNS packets
             if data[54:56] == "\x86\xdd":
-                continue
+                return
             logging.debug("IP packet forwarded \nversion:{0}\nmsg_type:"
                 "{1}\nsrc_uid:{2}\ndest_uid:{3}\nsrc_mac:{4}\ndst_mac:{"
                 "5}\neth_type:{6}".format(data[0].encode("hex"), \
@@ -101,9 +103,9 @@ class TincanDispatcher(ControllerModule):
                 data[48:54].encode("hex"), data[54:56].encode("hex")))
 
             if not self.CFxObject.CONFIG["on-demand_connection"]:
-                continue
+                return
             if len(data) < 16:
-                continue
+                return
             self.create_connection_req(data[2:])
 
         else:

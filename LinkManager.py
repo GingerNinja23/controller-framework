@@ -12,9 +12,11 @@ class LinkManager(ControllerModule):
 
     def initialize(self):
         
-        logCBT = self.CFxHandle.createCBT(initiator='LinkManager',recipient='Logger',\
-                                          action='info',data="LinkManager Loaded")
-        self.CFxHandle.submitCBT(logCBT)
+        # logCBT = self.CFxHandle.createCBT(initiator='LinkManager',recipient='Logger',\
+        #                                   action='info',data="LinkManager Loaded")
+        # self.CFxHandle.submitCBT(logCBT)
+
+        print "LinkManager loaded"
 
     def processCBT(self,cbt): 
 
@@ -23,7 +25,7 @@ class LinkManager(ControllerModule):
         #                                  +cbt.initiator)
         #self.CFxHandle.submitCBT(logCBT)
 
-        elif(cbt.action == "CREATE_LINK"):
+        if(cbt.action == "CREATE_LINK"):
             # cbt.data is a dict containing all the required values
             do_create_link(self.CFxObject.sock,**cbt.data)
 

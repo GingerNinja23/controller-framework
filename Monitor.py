@@ -12,9 +12,11 @@ class Monitor(ControllerModule):
 
     def initialize(self):
         
-        logCBT = self.CFxHandle.createCBT(initiator='Monitor',recipient='Logger',\
-                                          action='info',data="Monitor Loaded")
-        self.CFxHandle.submitCBT(logCBT)
+        # logCBT = self.CFxHandle.createCBT(initiator='Monitor',recipient='Logger',\
+        #                                   action='info',data="Monitor Loaded")
+        # self.CFxHandle.submitCBT(logCBT)
+
+        print "Monitor loaded"
 
     def processCBT(self,cbt):
 

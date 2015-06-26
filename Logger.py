@@ -2,7 +2,7 @@ import logging
 from ipoplib import *
 from ControllerModule import ControllerModule
 
-class TincanHandler(ControllerModule):
+class Logger(ControllerModule):
 
     def __init__(self,CFxObject,CFxHandle,paramDict):
 
@@ -56,4 +56,3 @@ class TincanHandler(ControllerModule):
         else: 
             logging.log(5, message, *args, **argv)
 
-            

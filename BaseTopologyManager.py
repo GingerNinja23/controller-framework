@@ -12,9 +12,11 @@ class BaseTopologyManager(ControllerModule):
 
     def initialize(self):
         
-        logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Logger',\
-                                          action='info',data="BaseTopologyManager Loaded")
-        self.CFxHandle.submitCBT(logCBT)
+        # logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Logger',\
+        #                                   action='info',data="BaseTopologyManager Loaded")
+        # self.CFxHandle.submitCBT(logCBT)
+
+        print "BaseTopologyManager loaded"
 
     def processCBT(self,cbt): 
 
@@ -87,7 +89,7 @@ class BaseTopologyManager(ControllerModule):
         else:
             return True
 
-    def __link_trimmer():
+    def __link_trimmer(self):
         for k, v in self.CFxObject.peers.iteritems():
             # Trim TinCan link if the peer is offline
             if "fpr" in v and v["status"] == "offline":

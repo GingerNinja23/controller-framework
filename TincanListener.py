@@ -1,3 +1,4 @@
+import threading
 from ipoplib import *
 from ControllerModule import ControllerModule
 
@@ -12,10 +13,10 @@ class TincanListener(ControllerModule):
 
     def initialize(self):
         
-        logCBT = self.CFxHandle.createCBT(initiator='TincanListener',recipient='Logger',\
-                                          action='info',data="TincanListener Loaded")
-        self.CFxHandle.submitCBT(logCBT)
-
+        # logCBT = self.CFxHandle.createCBT(initiator='TincanListener',recipient='Logger',\
+        #                                   action='info',data="TincanListener Loaded")
+        # self.CFxHandle.submitCBT(logCBT)
+        print "TincanListener loaded"
         self.TincanListenerThread = threading.Thread(target = self.__tincan_listener)
         self.TincanListenerThread.setDaemon(True)
         self.TincanListenerThread.start()
@@ -36,6 +37,6 @@ class TincanListener(ControllerModule):
                 data, addr = sock_to_read.recvfrom(self.CFxObject.CONFIG["buf_size"])
                 tincanPacket = self.CFxHandle.createCBT(initiator='TincanListener',\
                                                         recipient='TincanDispatcher',\
-                                                        action='TINCAN_PKT',data=data)
+                                                        action='TINCAN_PKT',data=[data,addr])
                 self.CFxHandle.submitCBT(tincanPacket)
 
