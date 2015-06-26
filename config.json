@@ -11,31 +11,31 @@
     },
     "Logger": {
         "timer_interval": "NA",
-        "CBTterminate": true,
+        "CBTterminate": true
     },
     "TincanListener" : {
         "timer_interval": "NA",
-        "CBTterminate": true,
+        "CBTterminate": true
     },
     "TincanDispatcher": {
         "timer_interval": "NA",
-        "CBTterminate": true,
+        "CBTterminate": true
     },
     "Monitor": {
         "timer_interval": "NA",
-        "CBTterminate": true,
+        "CBTterminate": true
     },
 
     "BaseTopologyManager": {
         "timer_interval": "15",
-        "CBTterminate": true,
+        "CBTterminate": true
     },
     "LinkManager": {
         "timer_interval": "NA",
-        "CBTterminate": true,
+        "CBTterminate": true
     },
     "AddressMapper": {
         "timer_interval": "NA",
-        "CBTterminate": true,
+        "CBTterminate": true
     }
 }
