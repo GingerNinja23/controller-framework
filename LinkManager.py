@@ -19,6 +19,7 @@ class LinkManager(ControllerModule):
         print "LinkManager loaded"
 
     def processCBT(self,cbt): 
+        
 
         #logCBT = self.CFxHandle.createCBT(initiator='LinkManager',recipient='Logger',\
         #                                  action='debug',data="LinkManager: Received CBT from "\
@@ -27,7 +28,15 @@ class LinkManager(ControllerModule):
 
         if(cbt.action == "CREATE_LINK"):
             # cbt.data is a dict containing all the required values
-            do_create_link(self.CFxObject.sock,**cbt.data)
+            uid = cbt.data.get('uid')
+            fpr = cbt.data.get('fpr')
+            nid = cbt.data.get('nid')
+            sec = cbt.data.get('sec')
+            cas = cbt.data.get('cas')
+            do_create_link(self.CFxObject.sock,uid,fpr,nid,sec,cas)
+            logCBT = self.CFxHandle.createCBT(initiator='LinkManager',recipient='Logger',\
+                                              action='info',data="Creating Link with peer")
+            self.CFxHandle.submitCBT(logCBT)
 
         elif(cbt.action == "TRIM_LINK"):
             do_trim_link(self.CFxObject.sock,cbt.data) # UID is cbt.data

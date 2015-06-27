@@ -32,7 +32,6 @@ class TincanDispatcher(ControllerModule):
         #|      1       | message type                                 |
         #|      2       | Payload (JSON formatted control message)     |
         #---------------------------------------------------------------
-
         data = cbt.data[0]
         addr = cbt.data[1]
         if data[0] != ipop_ver:
@@ -50,6 +49,7 @@ class TincanDispatcher(ControllerModule):
                                               data="recv {0} {1}".format(addr, data[2:]))
             self.CFxHandle.submitCBT(logCBT)
             msg_type = msg.get("type", None)
+
             if msg_type == "echo_request":
                 make_remote_call(self.CFxObject.sock_svr, m_type=tincan_control,\
                   dest_addr=addr[0], dest_port=addr[1], payload=None,\

@@ -63,7 +63,7 @@ class Monitor(ControllerModule):
                                               "received from: "+cbt.initiator)
 
     def timer_method(self):
-        pass
+        do_get_state(self.CFxObject.sock)
 
     def trigger_conn_request(self, peer):
         if "fpr" not in peer and peer["xmpp_time"] < \
