@@ -22,7 +22,7 @@
         "CBTterminate": true
     },
     "Monitor": {
-        "timer_interval": "NA",
+        "timer_interval": "15",
         "CBTterminate": true
     },
 
