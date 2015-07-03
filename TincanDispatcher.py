@@ -57,7 +57,10 @@ class TincanDispatcher(ControllerModule):
                   type="echo_reply") # Reply to the echo_request 
 
             elif msg_type == "local_state":
-                self.CFxObject.ipop_state = msg
+                newCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',\
+                                                  recipient='Watchdog',action='STORE_LOCAL_STATE',\
+                                                  data=msg)
+                self.CFxHandle.submitCBT(newCBT)
 
             elif msg_type == "peer_state":
                 newCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',\
@@ -110,7 +113,8 @@ class TincanDispatcher(ControllerModule):
             self.create_connection_req(data[2:])
 
         else:
-            logCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',recipient='Logger',\
+            logCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',\
+                                              recipient='Logger',\
                                               action='error',\
                                               data="Unknown type message")
             self.CFxHandle.submitCBT(logCBT)

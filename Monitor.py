@@ -59,11 +59,13 @@ class Monitor(ControllerModule):
 
         else:
             logCBT = self.CFxHandle.createCBT(initiator='Monitor',recipient='Logger',\
-                                              action='error',data="Monitor: Unknown type of CBT "\
+                                              action='error',\
+                                              data="Monitor: Unknown type of CBT "\
                                               "received from: "+cbt.initiator)
+            self.CFxHandle.submitCBT(logCBT)
 
     def timer_method(self):
-        do_get_state(self.CFxObject.sock)
+        pass
 
     def terminate(self):
         pass
