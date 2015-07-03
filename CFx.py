@@ -6,6 +6,7 @@ import signal
 import socket
 import threading
 import importlib
+import collections
 from ipoplib import *
 from CBT import CBT as _CBT
 from CFxHandle import CFxHandle
@@ -16,7 +17,9 @@ class CFX(object):
 
         
         with open('config.json') as data_file:
-            self.json_data = json.load(data_file) # Read config.json
+            # Read config.json into an OrderedDict to load the modules in the order
+            # in which they appear in config.json
+            self.json_data = json.load(data_file,object_pairs_hook=collections.OrderedDict)
 
         # A dict containing the references to CFxHandles of all CMs
         # Key is the module name 
@@ -57,30 +60,45 @@ class CFX(object):
         # Put the CBT in appropriate queue
         self.CFxHandleDict[recipient].CMQueue.put(CBT)
 
+    def load_module(self,module_name):
+        module = importlib.import_module(module_name) # Dynamically importing the modules
+        module_class= getattr(module,module_name) # Get the class with name key from module
+
+        _CFxHandle = CFxHandle(self) # Create a CFxHandle object for each module
+
+        # Instantiate the class, with CFxHandle reference and configuration parameters
+        instance = module_class(self,_CFxHandle,self.json_data[module_name])
+
+        _CFxHandle.CMInstance = instance
+        _CFxHandle.CMConfig = self.json_data[module_name]
+
+        # Store the CFxHandle object references in the dict with module name as the key
+        self.CFxHandleDict[module_name] = _CFxHandle
+
+        # Intialize all the CFxHandles which in turn initialize the CMs    
+        _CFxHandle.initialize()
+
+
     def initialize(self,):
 
         print "CFx Loaded. Initializing Modules\n"
+        loaded_modules = ['CFx']
 
         # Iterating through the modules mentioned in config.json
         for key in self.json_data:
-            if (key != 'CFx'):
+            if (key not in loaded_modules):
+                try:
+                    dependencies = self.json_data[key]['dependencies']
+                    for module in dependencies:
+                        if(module not in loaded_modules):
+                            self.load_module(module)
+                            loaded_modules.append(module)
+                except KeyError:
+                    pass
+                self.load_module(key)
+                loaded_modules.append(key)
 
-                module = importlib.import_module(key) # Dynamically importing the modules
-                class_ = getattr(module,key) # Get the class with name key from module
 
-                _CFxHandle = CFxHandle(self) # Create a CFxHandle object for each module
-
-                # Instantiate the class, with CFxHandle reference and configuration parameters
-                instance = class_(self,_CFxHandle,self.json_data[key])
-
-                _CFxHandle.CMInstance = instance
-                _CFxHandle.CMConfig = self.json_data[key]
-
-                # Store the CFxHandle object references in the dict with module name as the key
-                self.CFxHandleDict[key] = _CFxHandle
-
-                # Intialize all the CFxHandles which in turn initialize the CMs    
-                _CFxHandle.initialize()
 
         # Set to false for now
         # if self.CONFIG["icc"]:
@@ -137,7 +155,7 @@ class CFX(object):
 
             while(True):
                 try:
-                    self.event.wait(999999)
+                    self.event.wait(1)
                 except KeyboardInterrupt,SystemExit:
                     break
 

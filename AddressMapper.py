@@ -12,10 +12,9 @@ class AddressMapper(ControllerModule):
 
     def initialize(self):
         
-        # logCBT = self.CFxHandle.createCBT(initiator='AddressMapper',recipient='Logger',\
-        #                                   action='info',data="AddressMapper Loaded")
-        # self.CFxHandle.submitCBT(logCBT)
-        print "AddressMapper loaded"
+        logCBT = self.CFxHandle.createCBT(initiator='AddressMapper',recipient='Logger',\
+                                          action='info',data="AddressMapper Loaded")
+        self.CFxHandle.submitCBT(logCBT)
         
         # For GroupVPN
         # Populating the uid_ip_table with all the IPv4 addresses

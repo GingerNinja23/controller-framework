@@ -13,10 +13,9 @@ class TincanDispatcher(ControllerModule):
 
     def initialize(self):
         
-        # logCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',recipient='Logger',\
-        #                                   action='info',data="TincanDispatcher Loaded")
-        # self.CFxHandle.submitCBT(logCBT)
-        print "TincanDispatcher loaded"
+        logCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',recipient='Logger',\
+                                          action='info',data="TincanDispatcher Loaded")
+        self.CFxHandle.submitCBT(logCBT)
 
     def processCBT(self,cbt):
 
@@ -124,4 +123,5 @@ class TincanDispatcher(ControllerModule):
 
     def terminate(self):
         pass
+
 

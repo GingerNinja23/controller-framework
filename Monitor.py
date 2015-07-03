@@ -12,11 +12,9 @@ class Monitor(ControllerModule):
 
     def initialize(self):
         
-        # logCBT = self.CFxHandle.createCBT(initiator='Monitor',recipient='Logger',\
-        #                                   action='info',data="Monitor Loaded")
-        # self.CFxHandle.submitCBT(logCBT)
-
-        print "Monitor loaded"
+        logCBT = self.CFxHandle.createCBT(initiator='Monitor',recipient='Logger',\
+                                          action='info',data="Monitor Loaded")
+        self.CFxHandle.submitCBT(logCBT)
 
     def processCBT(self,cbt):
 
@@ -74,4 +72,5 @@ class Monitor(ControllerModule):
             self.CFxObject.conn_stat[peer["uid"]] = "req_sent"
             do_send_msg(self.CFxObject.sock, "con_req", 1, peer["uid"],
                         self.CFxObject.ipop_state["_fpr"])
+
 

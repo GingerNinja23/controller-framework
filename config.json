@@ -9,33 +9,39 @@
         "tincan_logging": 0,
         "controller_logging": "DEBUG"
     },
-    "Logger": {
-        "timer_interval": "NA",
-        "CBTterminate": true
-    },
     "TincanListener" : {
         "timer_interval": "NA",
-        "CBTterminate": true
+        "joinEnabled": true,
+        "dependencies": ["Logger"]
+    },
+    "Logger": {
+        "timer_interval": "NA",
+        "joinEnabled": true
     },
     "TincanDispatcher": {
         "timer_interval": "NA",
-        "CBTterminate": true
+        "joinEnabled": true,
+        "dependencies": ["Logger"]
     },
     "Monitor": {
         "timer_interval": "15",
-        "CBTterminate": true
+        "joinEnabled": true,
+        "dependencies": ["Logger"]
     },
 
     "BaseTopologyManager": {
         "timer_interval": "15",
-        "CBTterminate": true
+        "joinEnabled": true,
+        "dependencies": ["Logger"]
     },
     "LinkManager": {
         "timer_interval": "NA",
-        "CBTterminate": true
+        "joinEnabled": true,
+        "dependencies": ["Logger"]
     },
     "AddressMapper": {
         "timer_interval": "NA",
-        "CBTterminate": true
+        "joinEnabled": true,
+        "dependencies": ["Logger"]
     }
 }

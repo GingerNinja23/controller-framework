@@ -12,11 +12,9 @@ class BaseTopologyManager(ControllerModule):
 
     def initialize(self):
         
-        # logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Logger',\
-        #                                   action='info',data="BaseTopologyManager Loaded")
-        # self.CFxHandle.submitCBT(logCBT)
-
-        print "BaseTopologyManager loaded"
+        logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Logger',\
+                                          action='info',data="BaseTopologyManager Loaded")
+        self.CFxHandle.submitCBT(logCBT)
 
     def processCBT(self,cbt): 
 
@@ -130,4 +128,5 @@ class BaseTopologyManager(ControllerModule):
 
     def terminate(self):
         pass
+
 

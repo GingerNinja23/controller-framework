@@ -1,4 +1,5 @@
 import Queue
+import logging
 import threading
 
 class CFxHandle(object):
@@ -47,7 +48,7 @@ class CFxHandle(object):
         self.CMThread.setDaemon(True)
 
         # Check whether CM requires join() or not
-        if(self.CMConfig['CBTterminate'] == 'False'):
+        if(self.CMConfig['joinEnabled'] == 'True'):
             self.joinEnabled = True
 
         # Check if the CMConfig has timer_interval specified
@@ -88,8 +89,10 @@ class CFxHandle(object):
 
             # Break the loop if special terminate CBT received
             if(cbt.action == 'TERMINATE'):
-                print "Module Exiting: "+str(self.CMInstance)+"\n"
-                self.timer_thread.stop()
+                module_name = self.CMInstance.__class__.__name__
+                logging.info(module_name+" exiting")
+                if(self.timer_thread):
+                    self.timer_thread.stop()
                 self.CMInstance.terminate()
                 break
             else:
