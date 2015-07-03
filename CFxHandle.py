@@ -89,6 +89,8 @@ class CFxHandle(object):
             # Break the loop if special terminate CBT received
             if(cbt.action == 'TERMINATE'):
                 print "Module Exiting: "+str(self.CMInstance)+"\n"
+                self.timer_thread.stop()
+                self.CMInstance.terminate()
                 break
             else:
                 self.CMInstance.processCBT(cbt)

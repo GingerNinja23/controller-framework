@@ -18,3 +18,8 @@ class ControllerModule(object):
     @abstractmethod
     def timer_method(self):
         pass
+
+    @abstractmethod
+    def terminate(self):
+        pass
+

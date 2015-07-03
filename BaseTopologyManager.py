@@ -127,3 +127,7 @@ class BaseTopologyManager(ControllerModule):
 
     def timer_method(self):
         self.__link_trimmer()
+
+    def terminate(self):
+        pass
+

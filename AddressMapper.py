@@ -87,3 +87,7 @@ class AddressMapper(ControllerModule):
     def timer_method(self):
         pass
 
+    def terminate(self):
+        pass
+
+

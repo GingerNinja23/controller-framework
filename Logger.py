@@ -57,3 +57,6 @@ class Logger(ControllerModule):
         else: 
             logging.log(5, message, *args, **argv)
 
+    def terminate(self):
+        pass
+

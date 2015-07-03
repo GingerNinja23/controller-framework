@@ -65,6 +65,9 @@ class Monitor(ControllerModule):
     def timer_method(self):
         do_get_state(self.CFxObject.sock)
 
+    def terminate(self):
+        pass
+
     def trigger_conn_request(self, peer):
         if "fpr" not in peer and peer["xmpp_time"] < \
                             self.CFxObject.CONFIG["wait_time"] * 8:                            
@@ -72,4 +75,3 @@ class Monitor(ControllerModule):
             do_send_msg(self.CFxObject.sock, "con_req", 1, peer["uid"],
                         self.CFxObject.ipop_state["_fpr"])
 
-            

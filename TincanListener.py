@@ -40,3 +40,6 @@ class TincanListener(ControllerModule):
                                                         action='TINCAN_PKT',data=[data,addr])
                 self.CFxHandle.submitCBT(tincanPacket)
 
+    def terminate(self):
+        pass
+
