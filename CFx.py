@@ -19,7 +19,8 @@ class CFX(object):
         with open('config.json') as data_file:
             # Read config.json into an OrderedDict to load the modules in the order
             # in which they appear in config.json
-            self.json_data = json.load(data_file,object_pairs_hook=collections.OrderedDict)
+            self.json_data = json.load(data_file,\
+                             object_pairs_hook=collections.OrderedDict)
 
         # A dict containing the references to CFxHandles of all CMs
         # Key is the module name 
@@ -61,8 +62,12 @@ class CFX(object):
         self.CFxHandleDict[recipient].CMQueue.put(CBT)
 
     def load_module(self,module_name):
-        module = importlib.import_module(module_name) # Dynamically importing the modules
-        module_class= getattr(module,module_name) # Get the class with name key from module
+
+        # Dynamically importing the modules
+        module = importlib.import_module(module_name)
+        
+        # Get the class with name key from module
+        module_class= getattr(module,module_name) 
 
         _CFxHandle = CFxHandle(self) # Create a CFxHandle object for each module
 
@@ -82,21 +87,21 @@ class CFX(object):
     def initialize(self,):
 
         print "CFx Loaded. Initializing Modules\n"
-        loaded_modules = ['CFx']
+        self.loaded_modules = ['CFx']
 
         # Iterating through the modules mentioned in config.json
         for key in self.json_data:
-            if (key not in loaded_modules):
+            if (key not in self.loaded_modules):
                 try:
                     dependencies = self.json_data[key]['dependencies']
                     for module in dependencies:
-                        if(module not in loaded_modules):
+                        if(module not in self.loaded_modules):
                             self.load_module(module)
-                            loaded_modules.append(module)
+                            self.loaded_modules.append(module)
                 except KeyError:
                     pass
                 self.load_module(key)
-                loaded_modules.append(key)
+                self.loaded_modules.append(key)
 
 
 

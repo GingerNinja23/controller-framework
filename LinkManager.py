@@ -12,8 +12,10 @@ class LinkManager(ControllerModule):
 
     def initialize(self):
         
-        logCBT = self.CFxHandle.createCBT(initiator='LinkManager',recipient='Logger',\
-                                          action='info',data="LinkManager Loaded")
+        logCBT = self.CFxHandle.createCBT(initiator='LinkManager',\
+                                          recipient='Logger',\
+                                          action='info',\
+                                          data="LinkManager Loaded")
         self.CFxHandle.submitCBT(logCBT)
 
     def processCBT(self,cbt): 

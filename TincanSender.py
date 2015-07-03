@@ -12,8 +12,10 @@ class TincanSender(ControllerModule):
 
     def initialize(self):
         
-        logCBT = self.CFxHandle.createCBT(initiator='TincanSender',recipient='Logger',\
-                                          action='info',data="TincanSender Loaded")
+        logCBT = self.CFxHandle.createCBT(initiator='TincanSender',\
+                                          recipient='Logger',\
+                                          action='info',\
+                                          data="TincanSender Loaded")
         self.CFxHandle.submitCBT(logCBT)
 
     def processCBT(self,cbt):

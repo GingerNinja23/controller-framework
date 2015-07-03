@@ -12,8 +12,10 @@ class BaseTopologyManager(ControllerModule):
 
     def initialize(self):
         
-        logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Logger',\
-                                          action='info',data="BaseTopologyManager Loaded")
+        logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
+                                          recipient='Logger',\
+                                          action='info',\
+                                          data="BaseTopologyManager Loaded")
         self.CFxHandle.submitCBT(logCBT)
 
     def processCBT(self,cbt): 
@@ -32,8 +34,8 @@ class BaseTopologyManager(ControllerModule):
 
             elif msg_type == "con_req": 
                 logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Logger',\
-                                                  action='info'\
-                                                  ,data="Received connection request")
+                                                  action='info',\
+                                                  data="Received connection request")
                 self.CFxHandle.submitCBT(logCBT)
                 if self.CFxObject.CONFIG["on-demand_connection"]: 
                     self.CFxObject.idle_peers[msg["uid"]]=msg

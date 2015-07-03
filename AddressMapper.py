@@ -12,8 +12,10 @@ class AddressMapper(ControllerModule):
 
     def initialize(self):
         
-        logCBT = self.CFxHandle.createCBT(initiator='AddressMapper',recipient='Logger',\
-                                          action='info',data="AddressMapper Loaded")
+        logCBT = self.CFxHandle.createCBT(initiator='AddressMapper',\
+                                          recipient='Logger',\
+                                          action='info',\
+                                          data="AddressMapper Loaded")
         self.CFxHandle.submitCBT(logCBT)
         
         # For GroupVPN
