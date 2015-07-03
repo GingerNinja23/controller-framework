@@ -47,6 +47,7 @@ class CFX(object):
         self.uid_ip_table = {}
         parts = CONFIG["ip4"].split(".")
         ip_prefix = parts[0] + "." + parts[1] + "."
+        self.CONFIG = CONFIG
 
     def submitCBT(self,CBT):
 

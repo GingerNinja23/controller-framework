@@ -12,9 +12,11 @@ class BaseTopologyManager(ControllerModule):
 
     def initialize(self):
         
-        logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Logger',\
-                                          action='info',data="BaseTopologyManager Loaded")
-        self.CFxHandle.submitCBT(logCBT)
+        # logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Logger',\
+        #                                   action='info',data="BaseTopologyManager Loaded")
+        # self.CFxHandle.submitCBT(logCBT)
+
+        print "BaseTopologyManager loaded"
 
     def processCBT(self,cbt): 
 
@@ -31,6 +33,10 @@ class BaseTopologyManager(ControllerModule):
             if msg_type == "con_stat": pass
 
             elif msg_type == "con_req": 
+                logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Logger',\
+                                                  action='info'\
+                                                  ,data="Received connection request")
+                self.CFxHandle.submitCBT(logCBT)
                 if self.CFxObject.CONFIG["on-demand_connection"]: 
                     self.CFxObject.idle_peers[msg["uid"]]=msg
                 else:
@@ -44,6 +50,10 @@ class BaseTopologyManager(ControllerModule):
                                            self.CFxObject.CONFIG["sec"], cas, ip4)
 
             elif msg_type == "con_resp":
+                logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Logger',\
+                                              action='warning'\
+                                              ,data="Receive connection response")
+                self.CFxHandle.submitCBT(logCBT)
                 if self.check_collision(msg_type, msg["uid"]): return
                 fpr_len = len(self.CFxObject.ipop_state["_fpr"])
                 fpr = msg["data"][:fpr_len]
@@ -60,11 +70,11 @@ class BaseTopologyManager(ControllerModule):
             self.CFxHandle.submitCBT(logCBT)
 
     def create_connection(self, uid, data, nid, sec, cas, ip4):
-        # locals() returns a dict of all the local varibles of the function present
-        # at the instant when the function is called
+
+        conn_dict = {'uid':uid,'fpr':data,'nid':nid,'sec':sec,'cas':cas}
         createLinkCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
                                                  recipient='LinkManager',action='CREATE_LINK',\
-                                                 data=locals())
+                                                 data=conn_dict)
         self.CFxHandle.submitCBT(createLinkCBT)
         if (self.CFxObject.CONFIG["switchmode"] == 1):
             do_set_remote_ip(self.CFxObject.sock, uid, ip4, gen_ip6(uid))
@@ -87,7 +97,7 @@ class BaseTopologyManager(ControllerModule):
         else:
             return True
 
-    def __link_trimmer():
+    def __link_trimmer(self):
         for k, v in self.CFxObject.peers.iteritems():
             # Trim TinCan link if the peer is offline
             if "fpr" in v and v["status"] == "offline":

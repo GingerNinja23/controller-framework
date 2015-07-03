@@ -2,7 +2,7 @@ import logging
 from ipoplib import *
 from ControllerModule import ControllerModule
 
-class TincanHandler(ControllerModule):
+class Logger(ControllerModule):
 
     def __init__(self,CFxObject,CFxHandle,paramDict):
 
@@ -14,6 +14,10 @@ class TincanHandler(ControllerModule):
 
     def initialize(self):
         
+        if "controller_logging" in self.CFxObject.CONFIG:
+            level = getattr(logging, self.CFxObject.CONFIG["controller_logging"])
+            logging.basicConfig(level=level)
+            
         logging.info("Logger Module Loaded")
 
         # PKTDUMP mode is for more detailed than debug logging, especially for dump
@@ -21,9 +25,6 @@ class TincanHandler(ControllerModule):
         logging.addLevelName(5, "PKTDUMP")
         logging.PKTDUMP = 5
 
-        if "controller_logging" in self.CFxObject.CONFIG:
-            level = getattr(logging, self.CFxObject.CONFIG["controller_logging"])
-            logging.basicConfig(level=level)
 
     def processCBT(self,cbt):
 
@@ -56,4 +57,3 @@ class TincanHandler(ControllerModule):
         else: 
             logging.log(5, message, *args, **argv)
 
-            
