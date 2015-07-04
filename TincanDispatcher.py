@@ -58,7 +58,7 @@ class TincanDispatcher(ControllerModule):
 
             elif msg_type == "local_state":
                 newCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',\
-                                                  recipient='Watchdog',action='STORE_LOCAL_STATE',\
+                                                  recipient='Watchdog',action='STORE_IPOP_STATE',\
                                                   data=msg)
                 self.CFxHandle.submitCBT(newCBT)
 

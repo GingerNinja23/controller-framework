@@ -32,8 +32,6 @@ class CFX(object):
         self.ip4 = CONFIG["ip4"]
         self.uid = gen_uid(self.ip4) # SHA-1 hash
         self.vpn_type = "GroupVPN"
-        self.ipop_state = {}
-        self.peers = {}
         self.peers_ip4 = {}
         self.peers_ip6 = {}
         self.far_peers = {}

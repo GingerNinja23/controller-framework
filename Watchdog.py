@@ -8,7 +8,8 @@ class Watchdog(ControllerModule):
         self.CFxHandle = CFxHandle
         self.paramDict = paramDict
         self.pendingCBT = {}
-        self.CFxObject = CFxObject
+        self.ipop_state = None
+
 
     def initialize(self):
         
@@ -20,9 +21,14 @@ class Watchdog(ControllerModule):
 
     def processCBT(self,cbt):
 
-        if(cbt.action == 'STORE_LOCAL_STATE'):
+        if(cbt.action == 'STORE_IPOP_STATE'):
             msg = cbt.data
-            self.CFxObject.ipop_state = msg
+            self.ipop_state = msg
+        elif(cbt.action = 'QUERY_IPOP_STATE'):
+            cbt.data = self.ipop_state
+            cbt.initiator,cbt.recipient = cbt.recipient,cbt.initiator
+            # Submit the CBT back to the initiator with data as IPOP state
+            self.CFxHandle.submitCBT(cbt)
         else:
             logCBT = self.CFxHandle.createCBT(initiator='Monitor',recipient='Logger',\
                                               action='error',\
