@@ -10,6 +10,7 @@ class Monitor(ControllerModule):
         self.pendingCBT = {}
         self.CBTMappings = {}
         self.peers = {}
+        self.idle_peers = {}
         self.conn_stat = {}
         self.ipop_state = None
 
@@ -40,6 +41,23 @@ class Monitor(ControllerModule):
                 cbt.initiator,cbt.recipient = cbt.recipient,cbt.initiator
                 cbt.data = self.peers.get(peer_uid)
                 self.CFxHandle.submitCBT(cbt)
+
+            elif(cbt.action == 'QUERY_IDLE_PEER_STATE'):
+                idle_peer_uid = cbt.data
+                cbt.initiator,cbt.recipient = cbt.recipient,cbt.initiator
+                cbt.data = self.idle_peers.get(idle_peer_uid)
+                self.CFxHandle.submitCBT(cbt)
+
+            elif(cbt.action == 'STORE_IDLE_PEER_STATE'):
+                try:
+                    # cbt.data is a dict with uid and idle_peer_state keys
+                    self.idle_peers[cbt.data['uid']] = cbt.data['idle_peer_state']
+                except KeyError:
+
+                    logCBT = self.CFxHandle.createCBT(initiator='Monitor',recipient='Logger',\
+                                                      action='warning',\
+                                                      data="Invalid STORE_IDLE_PEER_STATE Configuration")
+                    self.CFxHandle.submitCBT(logCBT)
 
             else:
                 logCBT = self.CFxHandle.createCBT(initiator='Monitor',recipient='Logger',\
@@ -122,7 +140,6 @@ class Monitor(ControllerModule):
             if(service not in pendingCBT):
                 return False
         return True
-
 
     def trigger_conn_request(self, peer):
         if "fpr" not in peer and peer["xmpp_time"] < \

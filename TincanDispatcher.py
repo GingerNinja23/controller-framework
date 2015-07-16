@@ -93,24 +93,10 @@ class TincanDispatcher(ControllerModule):
         #|     22       | destination uid                              |
         #|     42       | Payload (Ethernet frame)                     |
         #|-------------------------------------------------------------|
+
+        # Pass for basic GVPN
         elif data[1] == tincan_packet:
-
-            # Ignore IPv6 packets for log readability. Most of them are
-            # Multicast DNS packets
-            if data[54:56] == "\x86\xdd":
-                return
-            logging.debug("IP packet forwarded \nversion:{0}\nmsg_type:"
-                "{1}\nsrc_uid:{2}\ndest_uid:{3}\nsrc_mac:{4}\ndst_mac:{"
-                "5}\neth_type:{6}".format(data[0].encode("hex"), \
-                data[1].encode("hex"), data[2:22].encode("hex"), \
-                data[22:42].encode("hex"), data[42:48].encode("hex"),\
-                data[48:54].encode("hex"), data[54:56].encode("hex")))
-
-            if not self.CFxObject.CONFIG["on-demand_connection"]:
-                return
-            if len(data) < 16:
-                return
-            self.create_connection_req(data[2:])
+            pass
 
         else:
             logCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',\

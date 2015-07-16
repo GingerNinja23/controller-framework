@@ -13,16 +13,17 @@ class TincanListener(ControllerModule):
 
     def initialize(self):
         
-        logCBT = self.CFxHandle.createCBT(initiator='TincanListener',\
-                                          recipient='Logger',\
-                                          action='info',\
-                                          data="TincanListener Loaded")
-        self.CFxHandle.submitCBT(logCBT)
 
         self.TincanListenerThread = threading.Thread(target = self.__tincan_listener)
         self.TincanListenerThread.setDaemon(True)
         self.TincanListenerThread.start()
 
+        logCBT = self.CFxHandle.createCBT(initiator='TincanListener',\
+                                          recipient='Logger',\
+                                          action='info',\
+                                          data="TincanListener Loaded")
+        self.CFxHandle.submitCBT(logCBT)
+        
     def processCBT(self,cbt):
         pass
 

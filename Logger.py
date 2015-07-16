@@ -11,7 +11,6 @@ class Logger(ControllerModule):
         self.pendingCBT = {}
         self.CFxObject = CFxObject
 
-
     def initialize(self):
         
         if "controller_logging" in self.CFxObject.CONFIG:

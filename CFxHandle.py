@@ -53,24 +53,16 @@ class CFxHandle(object):
 
         # Check if the CMConfig has timer_interval specified
         # If not then assume timer functionality not required
+
+        timer_enabled = False
         try:
-            interval = self.CMConfig['timer_interval']
-        except:
-            interval = "NA"
-
-
-        if(interval != "NA"):
+            interval = int(self.CMConfig['timer_interval'])
             timer_enabled = True
-
-            try:
-                interval = int(interval)
-            except:
-                print "Invalid timer configuration for "+key+\
-                      ". Timer is disabled for this module"
-                timer_enabled = False
-
-        else:
-            timer_enabled = False
+        except ValueError:
+            print "Invalid timer configuration for "+key+\
+                  ". Timer has been disabled for this module"
+        except KeyError:
+            pass
 
         if(timer_enabled):
 

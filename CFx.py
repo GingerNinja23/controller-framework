@@ -14,22 +14,25 @@ from CFxHandle import CFxHandle
 class CFX(object):
 
     def __init__(self):
-
-        
+       
         with open('config.json') as data_file:
             # Read config.json into an OrderedDict to load the modules in the order
             # in which they appear in config.json
             self.json_data = json.load(data_file,\
                              object_pairs_hook=collections.OrderedDict)
 
+        # Set default config values
+        self.CONFIG = CONFIG
+        self.parse_config()
+
         # A dict containing the references to CFxHandles of all CMs
         # Key is the module name 
         self.CFxHandleDict = {} 
         self.idle_peers = {}
-        self.user = CONFIG["xmpp_username"]
-        self.password = CONFIG["xmpp_password"] 
-        self.host = CONFIG["xmpp_host"] 
-        self.ip4 = CONFIG["ip4"]
+        self.user = self.CONFIG["xmpp_username"]
+        self.password = self.CONFIG["xmpp_password"] 
+        self.host = self.CONFIG["xmpp_host"] 
+        self.ip4 = self.CONFIG["ip4"]
         self.uid = gen_uid(self.ip4) # SHA-1 hash
         self.vpn_type = "GroupVPN"
         self.peers_ip4 = {}
@@ -39,17 +42,16 @@ class CFX(object):
         if socket.has_ipv6:
             self.sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
             self.sock_svr = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-            self.sock_svr.bind((CONFIG["localhost6"], CONFIG["contr_port"]))
+            self.sock_svr.bind((self.CONFIG["localhost6"], self.CONFIG["contr_port"]))
         else:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.sock_svr = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.sock_svr.bind((CONFIG["localhost"], CONFIG["contr_port"]))
+            self.sock_svr.bind((self.CONFIG["localhost"], self.CONFIG["contr_port"]))
         self.sock.bind(("", 0))
         self.sock_list = [ self.sock, self.sock_svr ]
         self.uid_ip_table = {}
-        parts = CONFIG["ip4"].split(".")
+        parts = self.CONFIG["ip4"].split(".")
         ip_prefix = parts[0] + "." + parts[1] + "."
-        self.CONFIG = CONFIG
 
     def submitCBT(self,CBT):
 
@@ -61,25 +63,55 @@ class CFX(object):
 
     def load_module(self,module_name):
 
-        # Dynamically importing the modules
-        module = importlib.import_module(module_name)
-        
-        # Get the class with name key from module
-        module_class= getattr(module,module_name) 
+        if(module_name not in self.loaded_modules):
+            # Load dependencies of the module
+            self.load_dependencies(module_name)
 
-        _CFxHandle = CFxHandle(self) # Create a CFxHandle object for each module
+            # Dynamically importing the modules
+            module = importlib.import_module(module_name)
+            
+            # Get the class with name key from module
+            module_class= getattr(module,module_name) 
 
-        # Instantiate the class, with CFxHandle reference and configuration parameters
-        instance = module_class(self,_CFxHandle,self.json_data[module_name])
+            _CFxHandle = CFxHandle(self) # Create a CFxHandle object for each module
 
-        _CFxHandle.CMInstance = instance
-        _CFxHandle.CMConfig = self.json_data[module_name]
+            # Instantiate the class, with CFxHandle reference and configuration parameters
+            instance = module_class(self,_CFxHandle,self.json_data[module_name])
 
-        # Store the CFxHandle object references in the dict with module name as the key
-        self.CFxHandleDict[module_name] = _CFxHandle
+            _CFxHandle.CMInstance = instance
+            _CFxHandle.CMConfig = self.json_data[module_name]
 
-        # Intialize all the CFxHandles which in turn initialize the CMs    
-        _CFxHandle.initialize()
+            # Store the CFxHandle object references in the dict with module name as the key
+            self.CFxHandleDict[module_name] = _CFxHandle
+
+            # Intialize all the CFxHandles which in turn initialize the CMs    
+            _CFxHandle.initialize()
+
+            self.loaded_modules.append(module_name)
+
+    def load_dependencies(self,module_name):
+        try:
+            dependencies = self.json_data[module_name]['dependencies']
+            for module in dependencies:
+                if(module not in self.loaded_modules):
+                    self.load_module(module)
+        except:
+            pass
+
+    # Return True if the directed graph g has a cycle.
+    def detect_cyclic_dependency(self,g):
+
+        path = set()
+
+        def visit(vertex):
+            path.add(vertex)
+            for neighbour in g.get(vertex, ()):
+                if neighbour in path or visit(neighbour):
+                    return True
+            path.remove(vertex)
+            return False
+
+        return any(visit(v) for v in g)
 
 
     def initialize(self,):
@@ -87,20 +119,24 @@ class CFX(object):
         print "CFx Loaded. Initializing Modules\n"
         self.loaded_modules = ['CFx']
 
+
+        dependency_graph = {}
+        for key in self.json_data:
+            if(key != 'CFx'):
+                try:
+                    dependency_graph[key]=self.json_data[key]['dependencies']
+                except:
+                    pass
+
+        if(self.detect_cyclic_dependency(dependency_graph)):
+            logging.error("Circular dependency detected in config.json. Exiting")
+            sys.exit()
+
         # Iterating through the modules mentioned in config.json
         for key in self.json_data:
             if (key not in self.loaded_modules):
-                try:
-                    dependencies = self.json_data[key]['dependencies']
-                    for module in dependencies:
-                        if(module not in self.loaded_modules):
-                            self.load_module(module)
-                            self.loaded_modules.append(module)
-                except KeyError:
-                    pass
+                #try:
                 self.load_module(key)
-                self.loaded_modules.append(key)
-
 
 
         # Set to false for now
@@ -209,10 +245,66 @@ class CFX(object):
         # Python automatic garbage collector handles it anyway
         pass
 
+    def parse_config(self):
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-c", help="load configuration from a file",
+                            dest="config_file", metavar="config_file")
+        parser.add_argument("-u", help="update configuration file if needed",
+                            dest="update_config", action="store_true")
+        parser.add_argument("-p", help="load remote ip configuration file",
+                            dest="ip_config", metavar="ip_config")
+        parser.add_argument("-s", help="configuration as json string (overrides configuration from file)",
+                            dest="config_string", metavar="config_string")
+        parser.add_argument("--pwdstdout", help="use stdout as password stream",
+                            dest="pwdstdout", action="store_true")
+
+        args = parser.parse_args()
+
+        if args.config_file:
+            # Load the config file
+            with open(args.config_file) as f:
+
+                loaded_config = json.load(f)
+                # CFx parameters retrieved from config.json
+                try:
+                    CFxConfig = loaded_config['CFx']
+                except KeyError:
+                    logging.error("Invalid Config for CFx. Terminating")
+                    sys.exit()
+
+            self.CONFIG.update(CFxConfig)
+            
+        if args.config_string:
+            # Load the config string
+            loaded_config = json.loads(args.config_string)
+            self.CONFIG.update(loaded_config)        
+
+        need_save = setup_config(CONFIG)
+        if need_save and args.config_file and args.update_config:
+            with open(args.config_file, "w") as f:
+                json.dump(self.CONFIG, f, indent=4, sort_keys=True)
+
+        if not ("xmpp_username" in self.CONFIG and "xmpp_host" in self.CONFIG):
+            raise ValueError("At least 'xmpp_username' and 'xmpp_host' must be "
+                             "specified in config file or string")
+
+        if "xmpp_password" not in self.CONFIG:
+            prompt = "\nPassword for %s: " % self.CONFIG["xmpp_username"]
+            if args.pwdstdout:
+              self.CONFIG["xmpp_password"] = getpass.getpass(prompt, stream=sys.stdout)
+            else:
+              self.CONFIG["xmpp_password"] = getpass.getpass(prompt)
+
+        if "controller_logging" in self.CONFIG:
+            level = getattr(logging, self.CONFIG["controller_logging"])
+            logging.basicConfig(level=level)
+
+        if args.ip_config:
+            load_peer_ip_config(args.ip_config)
 
 def main():
 
-    parse_config()
     CFx = CFX()
     # Ignore Status reporting for now
 

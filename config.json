@@ -10,16 +10,13 @@
         "controller_logging": "DEBUG"
     },
     "TincanListener" : {
-        "timer_interval": "NA",
         "joinEnabled": true,
         "dependencies": ["Logger"]
     },
     "Logger": {
-        "timer_interval": "NA",
         "joinEnabled": true
     },
     "TincanDispatcher": {
-        "timer_interval": "NA",
         "joinEnabled": true,
         "dependencies": ["Logger"]
     },
@@ -35,12 +32,10 @@
         "dependencies": ["Logger"]
     },
     "LinkManager": {
-        "timer_interval": "NA",
         "joinEnabled": true,
         "dependencies": ["Logger"]
     },
     "AddressMapper": {
-        "timer_interval": "NA",
         "joinEnabled": true,
         "dependencies": ["Logger"]
     }

@@ -38,7 +38,10 @@ class BaseTopologyManager(ControllerModule):
                                                   data="Received connection request")
                 self.CFxHandle.submitCBT(logCBT)
                 if self.CFxObject.CONFIG["on-demand_connection"]: 
-                    self.CFxObject.idle_peers[msg["uid"]]=msg
+                  idle_peer_CBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Monitor',\
+                                                    action='STORE_IDLE_PEER_STATE',\
+                                                    data={'uid':msg['uid'],'idle_peer_state':msg})
+                  self.CFxHandle.submitCBT(logCBT)
                 else:
                     if self.check_collision(msg_type,msg["uid"]): 
                         return

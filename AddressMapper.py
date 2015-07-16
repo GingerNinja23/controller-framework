@@ -9,14 +9,9 @@ class AddressMapper(ControllerModule):
         self.paramDict = paramDict
         self.pendingCBT = {}
         self.CFxObject = CFxObject
+        self.uid_ip_table = {}
 
     def initialize(self):
-        
-        logCBT = self.CFxHandle.createCBT(initiator='AddressMapper',\
-                                          recipient='Logger',\
-                                          action='info',\
-                                          data="AddressMapper Loaded")
-        self.CFxHandle.submitCBT(logCBT)
         
         # For GroupVPN
         # Populating the uid_ip_table with all the IPv4 addresses
@@ -27,8 +22,13 @@ class AddressMapper(ControllerModule):
             for j in range(0, 255):
                 ip = ip_prefix + str(i) + "." + str(j)
                 uid = gen_uid(ip)
-                self.CFxObject.uid_ip_table[uid] = ip
+                self.uid_ip_table[uid] = ip
 
+        logCBT = self.CFxHandle.createCBT(initiator='AddressMapper',\
+                                          recipient='Logger',\
+                                          action='info',\
+                                          data="AddressMapper Loaded")
+        self.CFxHandle.submitCBT(logCBT)
 
     def processCBT(self,cbt):
 
@@ -36,7 +36,7 @@ class AddressMapper(ControllerModule):
 
             try:
                 # cbt.data is a dict with uid and ip keys
-                self.CFxObject.uid_ip_table[cbt.data['uid']] = cbt.data['ip']
+                self.uid_ip_table[cbt.data['uid']] = cbt.data['ip']
             except KeyError:
 
                 logCBT = self.CFxHandle.createCBT(initiator='AddressMapper',recipient='Logger',\
@@ -46,7 +46,7 @@ class AddressMapper(ControllerModule):
 
         elif(cbt.action == 'DEL_MAPPING'):
 
-            self.CFxObject.uid_ip_table.pop(cbt.data) # Remove mapping if it exists
+            self.uid_ip_table.pop(cbt.data) # Remove mapping if it exists
 
         elif(cbt.action == 'RESOLVE'):
 
@@ -54,7 +54,7 @@ class AddressMapper(ControllerModule):
             cbt.action = 'RESOLVE_RESP'
 
             # If mapping exists, return IP else return None
-            cbt.data = self.CFxObject.uid_ip_table.get(cbt.data)
+            cbt.data = self.uid_ip_table.get(cbt.data)
 
             # Swap inititator and recipient
             cbt.initiator,cbt.recipient = cbt.recipient,cbt.initiator 
@@ -68,7 +68,7 @@ class AddressMapper(ControllerModule):
             ip = cbt.data
             cbt.data = None
             # Iterate through all items in dict for reverse lookup
-            for key,value in self.CFxObject.uid_ip_table.items():
+            for key,value in self.uid_ip_table.items():
                 if(value==ip):
                     cbt.data = key
                     break
