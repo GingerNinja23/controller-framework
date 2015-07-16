@@ -70,6 +70,7 @@ class Monitor(ControllerModule):
         elif((cbt not in self.pendingCBT) and checkMapping(cbt)):
             # Get the source CBT of this request
             sourceCBT_uid = checkMapping(cbt)
+            self.pendingCBT[cbt.uid]=cbt
             # If all the other services of this sourceCBT are also completed,
             # process CBT here. Else wait for other CBTs to arrive 
             if(allServicesCompleted(sourceCBT_uid)):
@@ -107,9 +108,6 @@ class Monitor(ControllerModule):
                                 msg["last_active"]=\
                                         self.peers[msg["uid"]]["last_active"]
                         self.peers[msg["uid"]] = msg
-            
-            else:
-                self.pendingCBT[cbt.uid]=cbt
 
         else:
             logCBT = self.CFxHandle.createCBT(initiator='Monitor',recipient='Logger',\

@@ -8,7 +8,9 @@ class BaseTopologyManager(ControllerModule):
         self.CFxHandle = CFxHandle
         self.paramDict = paramDict
         self.pendingCBT = {}
+        self.CBTMappings = {}
         self.CFxObject = CFxObject
+        self.ipop_state = None
 
     def initialize(self):
         
@@ -18,59 +20,141 @@ class BaseTopologyManager(ControllerModule):
                                           data="BaseTopologyManager Loaded")
         self.CFxHandle.submitCBT(logCBT)
 
-    def processCBT(self,cbt): 
+   def processCBT(self,cbt): 
 
-        #logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Logger',\
-        #                                  action='debug',data="BaseTopologyManager: Received CBT from "\
-        #                                  +cbt.initiator)
-        #self.CFxHandle.submitCBT(logCBT)
+        # In case of a fresh CBT, request the required services
+        # from the other modules, by issuing CBTs. If no services
+        # from other modules required, process the CBT here only
+        if((cbt not in self.pendingCBT) and not checkMapping(cbt)):
+            if(cbt.action == "TINCAN_MSG"):
+                msg = cbt.data
+                msg_type = msg.get("type", None)
 
-        if(cbt.action == "TINCAN_MSG"):
-            msg = cbt.data
-            msg_type = msg.get("type", None)
+                # we ignore connection status notification for now
+                if msg_type == "con_stat":
+                    pass
 
-            # we ignore connection status notification for now
-            if msg_type == "con_stat": pass
+                elif msg_type == "con_req":
+                    stateCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
+                                                        recipient='Watchdog',\
+                                                        action='QUERY_IPOP_STATE',\
+                                                        data="")
+                    self.CFxHandle.submitCBT(stateCBT)
+                    self.CBTMappings[cbt.uid] = [stateCBT.uid]
 
-            elif msg_type == "con_req": 
+                    mappingCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
+                                                        recipient='AddressMapper',\
+                                                        action='RESOLVE',\
+                                                        data=msg['uid'])
+                    self.CFxHandle.submitCBT(mappingCBT)
+                    self.CBTMappings[cbt.uid].append(mappingCBT.uid)
+                    self.pendingCBT[cbt.uid] = cbt
+
+                elif msg_type == "con_resp":
+
+                    stateCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
+                                                        recipient='Watchdog',\
+                                                        action='QUERY_IPOP_STATE',\
+                                                        data="")
+                    self.CFxHandle.submitCBT(stateCBT)
+                    self.CBTMappings[cbt.uid] = [stateCBT.uid]
+
+                    mappingCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
+                                                        recipient='AddressMapper',\
+                                                        action='RESOLVE',\
+                                                        data=msg['uid'])
+                    self.CFxHandle.submitCBT(mappingCBT)
+                    self.CBTMappings[cbt.uid].append(mappingCBT.uid)
+                    self.pendingCBT[cbt.uid] = cbt
+
+            else:
                 logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Logger',\
-                                                  action='info',\
-                                                  data="Received connection request")
+                                                  action='warning'\
+                                                  ,data="BaseTopologyManager: Invalid CBT received "\
+                                                  "from "+cbt.initiator)
                 self.CFxHandle.submitCBT(logCBT)
-                if self.CFxObject.CONFIG["on-demand_connection"]: 
-                  idle_peer_CBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Monitor',\
-                                                    action='STORE_IDLE_PEER_STATE',\
-                                                    data={'uid':msg['uid'],'idle_peer_state':msg})
-                  self.CFxHandle.submitCBT(logCBT)
-                else:
-                    if self.check_collision(msg_type,msg["uid"]): 
-                        return
-                    fpr_len = len(self.CFxObject.ipop_state["_fpr"])
-                    fpr = msg["data"][:fpr_len]
-                    cas = msg["data"][fpr_len + 1:]
-                    ip4 = self.CFxObject.uid_ip_table[msg["uid"]]
-                    self.create_connection(msg["uid"], fpr, 1, 
-                                           self.CFxObject.CONFIG["sec"], cas, ip4)
 
-            elif msg_type == "con_resp":
-                logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Logger',\
-                                              action='warning'\
-                                              ,data="Receive connection response")
-                self.CFxHandle.submitCBT(logCBT)
-                if self.check_collision(msg_type, msg["uid"]): return
-                fpr_len = len(self.CFxObject.ipop_state["_fpr"])
-                fpr = msg["data"][:fpr_len]
-                cas = msg["data"][fpr_len + 1:]
-                ip4 = self.CFxObject.uid_ip_table[msg["uid"]]
-                self.create_connection(msg["uid"], fpr, 1, 
-                                       self.CFxObject.CONFIG["sec"], cas, ip4)
+        # Case when one of the requested service CBT comes back
+        elif((cbt not in self.pendingCBT) and checkMapping(cbt)):
+            # Get the source CBT of this request
+            sourceCBT_uid = checkMapping(cbt)
+            self.pendingCBT[cbt.uid]=cbt
+            # If all the other services of this sourceCBT are also completed,
+            # process CBT here. Else wait for other CBTs to arrive 
+            if(allServicesCompleted(sourceCBT_uid)):
+                if(pendingCBT[sourceCBT_uid]['action'] == 'TINCAN_MSG'):
+                    if msg_type == "con_req":
+                        for key in pendingCBT:
+                            if(pendingCBT[key]['action'] == 'QUERY_IPOP_STATE'):
+                                self.ipop_state = pendingCBT[key]['data']
+                            elif(pendingCBT[key]['action'] == 'RESOLVE'):
+                                ip4 = pendingCBT[key]['data']
+
+                        logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
+                                                          recipient='Logger',\
+                                                          action='info',\
+                                                          data="Received connection request")
+                        self.CFxHandle.submitCBT(logCBT)
+
+                        if self.CFxObject.CONFIG["on-demand_connection"]: 
+                            idle_peer_CBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
+                                                           recipient='Monitor',\
+                                                           action='STORE_IDLE_PEER_STATE',\
+                                                           data={'uid':msg['uid'],'idle_peer_state':msg})
+                            self.CFxHandle.submitCBT(logCBT)
+
+                        else:
+                            if self.check_collision(msg_type,msg["uid"]): 
+                                return
+                            fpr_len = len(self.ipop_state["_fpr"])
+                            fpr = msg["data"][:fpr_len]
+                            cas = msg["data"][fpr_len + 1:]
+                            self.create_connection(msg["uid"], fpr, 1, 
+                                                   self.CFxObject.CONFIG["sec"], cas, ip4)
+
+                    elif msg_type == "con_resp":
+                        for key in pendingCBT:
+                            if(pendingCBT[key]['action'] == 'QUERY_IPOP_STATE'):
+                                self.ipop_state = pendingCBT[key]['data']
+                            elif(pendingCBT[key]['action'] == 'RESOLVE'):
+                                ip4 = pendingCBT[key]['data']
+
+                        logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
+                                                          recipient='Logger',\
+                                                          action='warning',\
+                                                          data="Receive connection response")
+                        self.CFxHandle.submitCBT(logCBT)
+
+                        if self.check_collision(msg_type, msg["uid"]): return
+                        fpr_len = len(self.ipop_state["_fpr"])
+                        fpr = msg["data"][:fpr_len]
+                        cas = msg["data"][fpr_len + 1:]
+                        self.create_connection(msg["uid"], fpr, 1, 
+                                               self.CFxObject.CONFIG["sec"], cas, ip4)
 
         else:
             logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',recipient='Logger',\
-                                              action='warning'\
-                                              ,data="BaseTopologyManager: Invalid CBT received "\
-                                              "from "+cbt.initiator)
+                                              action='error',\
+                                              data="BaseTopologyManager: CBT already exists in "\
+                                              "pendingCBT dictionary")
             self.CFxHandle.submitCBT(logCBT)
+
+    # Check if the given cbt is a request sent by the current module
+    # If yes, returns the source CBT for which the request has been
+    # created, else return None
+    def checkMapping(self,cbt):
+        for key in self.CBTMappings:
+            if(cbt.data.uid in self.CBTMappings[key]):
+                return key
+        return None
+
+    # For a given sourceCBT's uid, check if all requests are serviced
+    def allServicesCompleted(self,sourceCBT_uid):
+        requested_services = CBTMappings[sourceCBT_uid]
+        for service in requested_services:
+            if(service not in pendingCBT):
+                return False
+        return True
 
     def create_connection(self, uid, data, nid, sec, cas, ip4):
 
