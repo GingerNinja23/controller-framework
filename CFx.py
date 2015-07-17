@@ -119,7 +119,7 @@ class CFX(object):
         print "CFx Loaded. Initializing Modules\n"
         self.loaded_modules = ['CFx']
 
-
+        # Check for circular dependencies
         dependency_graph = {}
         for key in self.json_data:
             if(key != 'CFx'):
@@ -135,17 +135,7 @@ class CFX(object):
         # Iterating through the modules mentioned in config.json
         for key in self.json_data:
             if (key not in self.loaded_modules):
-                #try:
                 self.load_module(key)
-
-
-        # Set to false for now
-        # if self.CONFIG["icc"]:
-        #     self.inter_controller_conn() # UDP Server for Inter Controller Connection
-
-        # No switchmode for basic GVPN, ignore this
-        # if CONFIG["switchmode"]:
-            # self.arp_table = {}
 
         # No TURN in barebones GVPN, so ignore this
         # Ignore the network interfaces in the list

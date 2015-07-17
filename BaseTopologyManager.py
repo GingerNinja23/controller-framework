@@ -48,6 +48,14 @@ class BaseTopologyManager(ControllerModule):
                                                         data=msg['uid'])
                     self.CFxHandle.submitCBT(mappingCBT)
                     self.CBTMappings[cbt.uid].append(mappingCBT.uid)
+
+                    conn_stat_CBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
+                                                        recipient='Monitor',\
+                                                        action='QUERY_CONN_STAT',\
+                                                        data=msg['uid'])
+                    self.CFxHandle.submitCBT(mappingCBT)
+                    self.CBTMappings[cbt.uid].append(conn_stat_CBT.uid)
+
                     self.pendingCBT[cbt.uid] = cbt
 
                 elif msg_type == "con_resp":
@@ -65,6 +73,14 @@ class BaseTopologyManager(ControllerModule):
                                                         data=msg['uid'])
                     self.CFxHandle.submitCBT(mappingCBT)
                     self.CBTMappings[cbt.uid].append(mappingCBT.uid)
+
+
+                    conn_stat_CBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
+                                                        recipient='Monitor',\
+                                                        action='QUERY_CONN_STAT',\
+                                                        data=msg['uid'])
+                    self.CFxHandle.submitCBT(mappingCBT)
+                    self.CBTMappings[cbt.uid].append(conn_stat_CBT.uid)
                     self.pendingCBT[cbt.uid] = cbt
 
             else:
@@ -89,6 +105,8 @@ class BaseTopologyManager(ControllerModule):
                                 self.ipop_state = pendingCBT[key]['data']
                             elif(pendingCBT[key]['action'] == 'RESOLVE'):
                                 ip4 = pendingCBT[key]['data']
+                            elif(pendingCBT[key]['action'] == 'QUERY_CONN_STAT'):
+                                conn_stat = cbt.data
 
                         logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
                                                           recipient='Logger',\
@@ -104,7 +122,7 @@ class BaseTopologyManager(ControllerModule):
                             self.CFxHandle.submitCBT(logCBT)
 
                         else:
-                            if self.check_collision(msg_type,msg["uid"]): 
+                            if self.check_collision(msg_type,msg["uid"], conn_stat): 
                                 return
                             fpr_len = len(self.ipop_state["_fpr"])
                             fpr = msg["data"][:fpr_len]
@@ -118,6 +136,8 @@ class BaseTopologyManager(ControllerModule):
                                 self.ipop_state = pendingCBT[key]['data']
                             elif(pendingCBT[key]['action'] == 'RESOLVE'):
                                 ip4 = pendingCBT[key]['data']
+                            elif(pendingCBT[key]['action'] == 'QUERY_CONN_STAT'):
+                                conn_stat = cbt.data
 
                         logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
                                                           recipient='Logger',\
@@ -125,7 +145,7 @@ class BaseTopologyManager(ControllerModule):
                                                           data="Receive connection response")
                         self.CFxHandle.submitCBT(logCBT)
 
-                        if self.check_collision(msg_type, msg["uid"]): return
+                        if self.check_collision(msg_type, msg["uid"],conn_stat): return
                         fpr_len = len(self.ipop_state["_fpr"])
                         fpr = msg["data"][:fpr_len]
                         cas = msg["data"][fpr_len + 1:]
@@ -168,18 +188,25 @@ class BaseTopologyManager(ControllerModule):
         else: 
             do_set_remote_ip(self.CFxObject.sock, uid, ip4, gen_ip6(uid))
 
-    def check_collision(self, msg_type, uid):
+    def check_collision(self, msg_type, uid, conn_stat):
         if msg_type == "con_req" and \
-           self.CFxObject.conn_stat.get(uid, None) == "req_sent":
+           conn_stat == "req_sent":
             if uid > self.CFxObject.ipop_state["_uid"]:
                 trimCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
                                                    recipient='LinkManager',action='TRIM_LINK',\
                                                    data=uid)
                 self.CFxHandle.submitCBT(trimCBT)
-                self.CFxObject.conn_stat.pop(uid, None)
+
+                conn_stat_pop_CBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
+                                                   recipient='Monitor',action='DELETE_CONN_STAT',\
+                                                   data=uid)
+                self.CFxHandle.submitCBT(conn_stat_pop_CBT)
             return False
         elif msg_type == "con_resp":
-            self.CFxObject.conn_stat[uid] = "resp_recv"
+            conn_stat_CBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
+                                               recipient='Monitor',action='STORE_CONN_STAT',\
+                                               data={'uid':uid,'status':"resp_recv"})
+            self.CFxHandle.submitCBT(conn_stat_CBT)
             return False
         else:
             return True

@@ -42,6 +42,25 @@ class Monitor(ControllerModule):
                 cbt.data = self.peers.get(peer_uid)
                 self.CFxHandle.submitCBT(cbt)
 
+            elif(cbt.action == 'QUERY_CONN_STAT'):
+                uid = cbt.data
+                cbt.initiator,cbt.recipient = cbt.recipient,cbt.initiator
+                cbt.data = self.conn_stat.get(uid)
+                self.CFxHandle.submitCBT(cbt)
+
+            elif(cbt.action == 'DELETE_CONN_STAT'):
+                uid = cbt.data
+                self.conn_stat.pop(uid,None)
+
+            elif(cbt.action == 'STORE_CONN_STAT'):
+                try:
+                    self.conn_stat[cbt.data['uid']] = cbt.data['status']
+                except KeyError:
+                    logCBT = self.CFxHandle.createCBT(initiator='Monitor',recipient='Logger',\
+                                                      action='warning',\
+                                                      data="Invalid STORE_CONN_STAT Configuration")
+                    self.CFxHandle.submitCBT(logCBT)
+
             elif(cbt.action == 'QUERY_IDLE_PEER_STATE'):
                 idle_peer_uid = cbt.data
                 cbt.initiator,cbt.recipient = cbt.recipient,cbt.initiator
