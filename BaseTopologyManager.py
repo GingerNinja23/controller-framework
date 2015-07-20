@@ -20,8 +20,8 @@ class BaseTopologyManager(ControllerModule):
                                           data="BaseTopologyManager Loaded")
         self.CFxHandle.submitCBT(logCBT)
 
-   def processCBT(self,cbt): 
-
+   def processCBT(self,cbt):
+   	
         # In case of a fresh CBT, request the required services
         # from the other modules, by issuing CBTs. If no services
         # from other modules required, process the CBT here only
@@ -191,7 +191,7 @@ class BaseTopologyManager(ControllerModule):
     def check_collision(self, msg_type, uid, conn_stat):
         if msg_type == "con_req" and \
            conn_stat == "req_sent":
-            if uid > self.CFxObject.ipop_state["_uid"]:
+            if uid > self.ipop_state["_uid"]:
                 trimCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
                                                    recipient='LinkManager',action='TRIM_LINK',\
                                                    data=uid)

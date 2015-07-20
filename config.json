@@ -38,6 +38,10 @@
     "AddressMapper": {
         "joinEnabled": true,
         "dependencies": ["Logger"]
+    },
+    "Watchdog":{
+        "joinEnabled": false,
+        "dependencies": ["Logger"]
     }
 }
 
