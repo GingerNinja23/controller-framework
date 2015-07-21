@@ -29,6 +29,7 @@ class CFX(object):
         # Key is the module name 
         self.CFxHandleDict = {} 
         self.idle_peers = {}
+        self.peers = {}
         self.user = self.CONFIG["xmpp_username"]
         self.password = self.CONFIG["xmpp_password"] 
         self.host = self.CONFIG["xmpp_host"] 

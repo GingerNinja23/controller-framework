@@ -7,6 +7,7 @@ class Watchdog(ControllerModule):
 
         self.CFxHandle = CFxHandle
         self.paramDict = paramDict
+        self.CFxObject = CFxObject
         self.pendingCBT = {}
         self.ipop_state = None
 
