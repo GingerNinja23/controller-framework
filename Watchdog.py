@@ -24,7 +24,7 @@ class Watchdog(ControllerModule):
         if(cbt.action == 'STORE_IPOP_STATE'):
             msg = cbt.data
             self.ipop_state = msg
-        elif(cbt.action = 'QUERY_IPOP_STATE'):
+        elif(cbt.action == 'QUERY_IPOP_STATE'):
             cbt.data = self.ipop_state
             cbt.initiator,cbt.recipient = cbt.recipient,cbt.initiator
             # Submit the CBT back to the initiator with data as IPOP state

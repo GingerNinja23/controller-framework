@@ -20,8 +20,7 @@ class BaseTopologyManager(ControllerModule):
                                           data="BaseTopologyManager Loaded")
         self.CFxHandle.submitCBT(logCBT)
 
-   def processCBT(self,cbt):
-    
+    def processCBT(self,cbt):
         # In case of a fresh CBT, request the required services
         # from the other modules, by issuing CBTs. If no services
         # from other modules required, process the CBT here only
