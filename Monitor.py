@@ -92,7 +92,7 @@ class Monitor(ControllerModule):
             self.pendingCBT[cbt.uid]=cbt
             # If all the other services of this sourceCBT are also completed,
             # process CBT here. Else wait for other CBTs to arrive 
-            if(allServicesCompleted(sourceCBT_uid)):
+            if(self.allServicesCompleted(sourceCBT_uid)):
                 if(pendingCBT[sourceCBT_uid]['action'] == 'STORE_PEER_STATE'):
                     for key in pendingCBT:
                         if(pendingCBT[key]['action'] == 'QUERY_IPOP_STATE'):
