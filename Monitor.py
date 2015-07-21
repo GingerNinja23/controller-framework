@@ -27,7 +27,7 @@ class Monitor(ControllerModule):
         # In case of a fresh CBT, request the required services
         # from the other modules, by issuing CBTs. If no services
         # from other modules required, process the CBT here only
-        if((cbt not in self.pendingCBT) and not checkMapping(cbt)):
+        if((cbt not in self.pendingCBT) and not self.checkMapping(cbt)):
             if(cbt.action == 'STORE_PEER_STATE'):
                 stateCBT = self.CFxHandle.createCBT(initiator='Monitor',recipient='Watchdog',\
                                                   action='QUERY_IPOP_STATE',\
@@ -86,9 +86,9 @@ class Monitor(ControllerModule):
                 self.CFxHandle.submitCBT(logCBT)
 
         # Case when one of the requested service CBT comes back
-        elif((cbt not in self.pendingCBT) and checkMapping(cbt)):
+        elif((cbt not in self.pendingCBT) and self.checkMapping(cbt)):
             # Get the source CBT of this request
-            sourceCBT_uid = checkMapping(cbt)
+            sourceCBT_uid = self.checkMapping(cbt)
             self.pendingCBT[cbt.uid]=cbt
             # If all the other services of this sourceCBT are also completed,
             # process CBT here. Else wait for other CBTs to arrive 
