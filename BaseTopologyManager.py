@@ -97,14 +97,14 @@ class BaseTopologyManager(ControllerModule):
             # If all the other services of this sourceCBT are also completed,
             # process CBT here. Else wait for other CBTs to arrive 
             if(self.allServicesCompleted(sourceCBT_uid)):
-                if(self.pendingCBT[sourceCBT_uid]['action'] == 'TINCAN_MSG'):
+                if(self.pendingCBT[sourceCBT_uid].action == 'TINCAN_MSG'):
                     if msg_type == "con_req":
                         for key in self.pendingCBT:
-                            if(self.pendingCBT[key]['action'] == 'QUERY_IPOP_STATE'):
-                                self.ipop_state = self.pendingCBT[key]['data']
-                            elif(self.pendingCBT[key]['action'] == 'RESOLVE'):
-                                ip4 = self.pendingCBT[key]['data']
-                            elif(self.pendingCBT[key]['action'] == 'QUERY_CONN_STAT'):
+                            if(self.pendingCBT[key].action == 'QUERY_IPOP_STATE'):
+                                self.ipop_state = self.pendingCBT[key].data
+                            elif(self.pendingCBT[key].action == 'RESOLVE'):
+                                ip4 = self.pendingCBT[key].data
+                            elif(self.pendingCBT[key].action == 'QUERY_CONN_STAT'):
                                 conn_stat = cbt.data
 
                         logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
@@ -131,11 +131,11 @@ class BaseTopologyManager(ControllerModule):
 
                     elif msg_type == "con_resp":
                         for key in self.pendingCBT:
-                            if(self.pendingCBT[key]['action'] == 'QUERY_IPOP_STATE'):
-                                self.ipop_state = self.pendingCBT[key]['data']
-                            elif(self.pendingCBT[key]['action'] == 'RESOLVE'):
-                                ip4 = self.pendingCBT[key]['data']
-                            elif(self.pendingCBT[key]['action'] == 'QUERY_CONN_STAT'):
+                            if(self.pendingCBT[key].action == 'QUERY_IPOP_STATE'):
+                                self.ipop_state = self.pendingCBT[key].data
+                            elif(self.pendingCBT[key].action == 'RESOLVE'):
+                                ip4 = self.pendingCBT[key].data
+                            elif(self.pendingCBT[key].action == 'QUERY_CONN_STAT'):
                                 conn_stat = cbt.data
 
                         logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',\
