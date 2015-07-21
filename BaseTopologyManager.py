@@ -52,7 +52,7 @@ class BaseTopologyManager(ControllerModule):
                                                         recipient='Monitor',\
                                                         action='QUERY_CONN_STAT',\
                                                         data=msg['uid'])
-                    self.CFxHandle.submitCBT(mappingCBT)
+                    self.CFxHandle.submitCBT(conn_stat_CBT)
                     self.CBTMappings[cbt.uid].append(conn_stat_CBT.uid)
 
                     self.pendingCBT[cbt.uid] = cbt
@@ -78,7 +78,7 @@ class BaseTopologyManager(ControllerModule):
                                                         recipient='Monitor',\
                                                         action='QUERY_CONN_STAT',\
                                                         data=msg['uid'])
-                    self.CFxHandle.submitCBT(mappingCBT)
+                    self.CFxHandle.submitCBT(conn_stat_CBT)
                     self.CBTMappings[cbt.uid].append(conn_stat_CBT.uid)
                     self.pendingCBT[cbt.uid] = cbt
 
