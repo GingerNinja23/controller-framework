@@ -163,7 +163,7 @@ class BaseTopologyManager(ControllerModule):
     # created, else return None
     def checkMapping(self,cbt):
         for key in self.CBTMappings:
-            if(cbt.data.uid in self.CBTMappings[key]):
+            if(cbt.uid in self.CBTMappings[key]):
                 return key
         return None
 
