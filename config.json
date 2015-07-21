@@ -21,7 +21,6 @@
         "dependencies": ["Logger"]
     },
     "Monitor": {
-        "timer_interval": "15",
         "joinEnabled": true,
         "dependencies": ["Logger"]
     },
@@ -40,6 +39,7 @@
         "dependencies": ["Logger"]
     },
     "Watchdog":{
+        "timer_interval": "15",
         "joinEnabled": false,
         "dependencies": ["Logger"]
     }
