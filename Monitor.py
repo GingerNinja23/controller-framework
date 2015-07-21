@@ -93,12 +93,12 @@ class Monitor(ControllerModule):
             # If all the other services of this sourceCBT are also completed,
             # process CBT here. Else wait for other CBTs to arrive 
             if(self.allServicesCompleted(sourceCBT_uid)):
-                if(pendingCBT[sourceCBT_uid]['action'] == 'STORE_PEER_STATE'):
-                    for key in pendingCBT:
-                        if(pendingCBT[key]['action'] == 'QUERY_IPOP_STATE'):
-                            self.ipop_state = pendingCBT[key]['data']
+                if(self.pendingCBT[sourceCBT_uid]['action'] == 'STORE_PEER_STATE'):
+                    for key in self.pendingCBT:
+                        if(self.pendingCBT[key]['action'] == 'QUERY_IPOP_STATE'):
+                            self.ipop_state = self.pendingCBT[key]['data']
       
-                    msg = pendingCBT[sourceCBT_uid].data
+                    msg = self.pendingCBT[sourceCBT_uid].data
                     msg_type = msg.get("type", None)
                     if msg_type == "peer_state": 
                         if msg["status"] == "offline" or "stats" not in msg:
@@ -152,9 +152,9 @@ class Monitor(ControllerModule):
 
     # For a given sourceCBT's uid, check if all requests are serviced
     def allServicesCompleted(self,sourceCBT_uid):
-        requested_services = CBTMappings[sourceCBT_uid]
+        requested_services = self.CBTMappings[sourceCBT_uid]
         for service in requested_services:
-            if(service not in pendingCBT):
+            if(service not in self.pendingCBT):
                 return False
         return True
 
