@@ -69,7 +69,6 @@ class CFxHandle(object):
             # Create timer worker thread
             self.timer_thread = threading.Thread(target = self.__timer_worker,\
                                                  args=(interval,))
-            self.timer_thread.setDaemon(True)
 
     def __worker(self):
         
@@ -83,8 +82,6 @@ class CFxHandle(object):
             if(cbt.action == 'TERMINATE'):
                 module_name = self.CMInstance.__class__.__name__
                 logging.info(module_name+" exiting")
-                if(self.timer_thread):
-                    self.timer_thread.stop()
                 self.CMInstance.terminate()
                 break
             else:

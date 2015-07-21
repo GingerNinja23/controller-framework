@@ -7,6 +7,7 @@ class Monitor(ControllerModule):
 
         self.CFxHandle = CFxHandle
         self.paramDict = paramDict
+        self.CFxObject = CFxObject
         self.pendingCBT = {}
         self.CBTMappings = {}
         self.peers = {}
