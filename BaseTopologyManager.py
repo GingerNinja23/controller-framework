@@ -102,7 +102,7 @@ class BaseTopologyManager(ControllerModule):
                         for key in self.pendingCBT:
                             if(self.pendingCBT[key].action == 'QUERY_IPOP_STATE'):
                                 self.ipop_state = self.pendingCBT[key].data
-                            elif(self.pendingCBT[key].action == 'RESOLVE'):
+                            elif(self.pendingCBT[key].action == 'RESOLVE_RESP'):
                                 ip4 = self.pendingCBT[key].data
                             elif(self.pendingCBT[key].action == 'QUERY_CONN_STAT'):
                                 conn_stat = cbt.data
@@ -133,7 +133,7 @@ class BaseTopologyManager(ControllerModule):
                         for key in self.pendingCBT:
                             if(self.pendingCBT[key].action == 'QUERY_IPOP_STATE'):
                                 self.ipop_state = self.pendingCBT[key].data
-                            elif(self.pendingCBT[key].action == 'RESOLVE'):
+                            elif(self.pendingCBT[key].action == 'RESOLVE_RESP'):
                                 ip4 = self.pendingCBT[key].data
                             elif(self.pendingCBT[key].action == 'QUERY_CONN_STAT'):
                                 conn_stat = cbt.data

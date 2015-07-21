@@ -69,6 +69,7 @@ class CFxHandle(object):
             # Create timer worker thread
             self.timer_thread = threading.Thread(target = self.__timer_worker,\
                                                  args=(interval,))
+            self.timer_thread.setDaemon(True)
 
     def __worker(self):
         
