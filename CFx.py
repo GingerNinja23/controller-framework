@@ -31,21 +31,21 @@ class CFX(object):
         self.CFxHandleDict = {} 
         self.idle_peers = {}
         self.peers = {}
-        self.user = self.CONFIG["xmpp_username"]
-        self.password = self.CONFIG["xmpp_password"] 
-        self.host = self.CONFIG["xmpp_host"] 
-        self.ip4 = self.CONFIG["ip4"]
+        self.user = self.CONFIG['CFx']["xmpp_username"]
+        self.password = self.CONFIG['CFx']["xmpp_password"] 
+        self.host = self.CONFIG['CFx']["xmpp_host"] 
+        self.ip4 = self.CONFIG['AddressMapper']["ip4"]
         self.uid = gen_uid(self.ip4) # SHA-1 hash
         self.vpn_type = "GroupVPN"
         self.far_peers = {}
         if socket.has_ipv6:
             self.sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
             self.sock_svr = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-            self.sock_svr.bind((self.CONFIG["localhost6"], self.CONFIG["contr_port"]))
+            self.sock_svr.bind((self.['CFx']CONFIG["localhost6"], self.['CFx']CONFIG["contr_port"]))
         else:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.sock_svr = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.sock_svr.bind((self.CONFIG["localhost"], self.CONFIG["contr_port"]))
+            self.sock_svr.bind((self.CONFIG['CFx']["localhost"], self.CONFIG['CFx']["contr_port"]))
         self.sock.bind(("", 0))
         self.sock_list = [ self.sock, self.sock_svr ]
 
