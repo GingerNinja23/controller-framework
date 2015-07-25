@@ -21,43 +21,78 @@ import keyring
 from threading import Timer
 
 # Set default config values
+
 CONFIG = {
-    "stun": ["stun.l.google.com:19302", "stun1.l.google.com:19302",
+    "CFx": {
+        "stun": ["stun.l.google.com:19302", "stun1.l.google.com:19302",
              "stun2.l.google.com:19302", "stun3.l.google.com:19302",
              "stun4.l.google.com:19302"],
-    "turn": [],  # Contains dicts with "server", "user", "pass" keys
-    "ip4": "172.16.0.1",
-    "localhost": "127.0.0.1",
-    "ip6_prefix": "fd50:0dbc:41f2:4a3c",
-    "localhost6": "::1",
-    "ip4_mask": 24,
-    "ip6_mask": 64,
-    "subnet_mask": 32,
-    "svpn_port": 5800,
-    "contr_port": 5801,
-    "local_uid": "",
-    "uid_size": 40,
-    "sec": True,
-    "wait_time": 15,
-    "buf_size": 65507,
-    "router_mode": False,
-    "on-demand_connection" : False,
-    "on-demand_inactive_timeout" : 600,
-    "tincan_logging": 1,
-    "controller_logging" : "INFO",
-    "icc" : False, # Inter-Controller Connection
-    "icc_port" : 30000,
-    "switchmode" : 0,
-    "trim_enabled": False,
-    "multihop": False,
-    "multihop_cl": 100, #Multihop connection count limit
-    "multihop_ihc": 3, #Multihop initial hop count
-    "multihop_hl": 10, #Multihop maximum hop count limit
-    "multihop_tl": 1,  # Multihop time limit (second)
-    "multihop_sr": True, # Multihop source route
-    "stat_report": False,
-    "stat_server" : "metrics.ipop-project.org",
-    "stat_server_port" : 5000
+        "turn": [],  # Contains dicts with "server", "user", "pass" keys
+        # "ip4": "172.16.0.1",
+        "localhost": "127.0.0.1",
+        "ip6_prefix": "fd50:0dbc:41f2:4a3c",
+        "localhost6": "::1",
+        "ip4_mask": 24,
+        "ip6_mask": 64,
+        "subnet_mask": 32,
+        "svpn_port": 5800,
+        "contr_port": 5801,
+        "local_uid": "",
+        "uid_size": 40,
+        "sec": True,
+        "router_mode": False,
+        "on-demand_connection" : False,
+        "on-demand_inactive_timeout" : 600,
+        "tincan_logging": 1,
+        "icc" : False, # Inter-Controller Connection
+        "icc_port" : 30000,
+        "switchmode" : 0,
+        "trim_enabled": False,
+        "multihop": False,
+        "multihop_cl": 100, #Multihop connection count limit
+        "multihop_ihc": 3, #Multihop initial hop count
+        "multihop_hl": 10, #Multihop maximum hop count limit
+        "multihop_tl": 1,  # Multihop time limit (second)
+        "multihop_sr": True, # Multihop source route
+        "stat_report": False,
+        "stat_server" : "metrics.ipop-project.org",
+        "stat_server_port" : 5000
+    },
+    "TincanListener" : {
+        "buf_size": 65507,
+        "socket_read_wait_time": 15,
+        "joinEnabled": True
+    },
+    "Logger": {
+        "controller_logging" : "INFO",
+        "joinEnabled": True
+    },
+    "TincanDispatcher": {
+        "joinEnabled": True
+    },
+    "Monitor": {
+        "trigger_con_wait_time": 120,
+        "joinEnabled": True
+    },
+    "BaseTopologyManager": {
+        "link_trimmer_wait_time": 30,
+        "timer_interval": 15,
+        "joinEnabled": True
+    },
+    "LinkManager": {
+        "joinEnabled": True
+    },
+    "AddressMapper": {
+        "ip4": "172.16.0.1",
+        "joinEnabled": True
+    },
+    "TincanSender": {
+        "joinEnabled": True        
+     },
+    "Watchdog":{
+        "timer_interval": 15,
+        "joinEnabled": False,
+    }
 }
 
 IP_MAP = {}
@@ -83,7 +118,6 @@ def set_global_variable_server(s):
 
 # # When proces killed or keyboard interrupted exit_handler runs then exit
 # def exit_handler(signum, frame):
-#     print "HALLLASASASASA"
 #     logging.info("Terminating Controller")
 #     if CONFIG["stat_report"]:
 #         if server != None:
@@ -124,7 +158,7 @@ def uid_a2b(str_uid):
     return str_uid.decode("hex")
 
 def gen_ip4(uid, peer_map, ip4=None):
-    ip4 = ip4 or CONFIG["ip4"]
+    ip4 = ip4 or CONFIG['AddressMapper']["ip4"]
     try:
         return peer_map[uid]
     except KeyError:
@@ -157,7 +191,6 @@ def make_call(sock, payload=None, **params):
         return sock.sendto(ipop_ver + tincan_control + json.dumps(params), dest)
     else:
         return sock.sendto(ipop_ver + tincan_packet + payload, dest)
-      
 
 def make_remote_call(sock, dest_addr, dest_port, m_type, payload, **params):
     dest = (dest_addr, dest_port)
@@ -173,8 +206,8 @@ def send_packet(sock, msg):
 
 def make_arp(src_uid=null_uid, dest_uid=null_uid, dest_mac=bc_mac,\
              src_mac=bc_mac, op="\x01", sender_mac=bc_mac,\
-             sender_ip4=CONFIG["ip4"], target_mac=null_mac,\
-             target_ip4=CONFIG["ip4"]):
+             sender_ip4=CONFIG['AddressMapper']["ip4"], target_mac=null_mac,\
+             target_ip4=CONFIG['AddressMapper']["ip4"]):
     arp_msg = ""
     arp_msg += src_uid
     arp_msg += dest_uid

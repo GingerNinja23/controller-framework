@@ -1,47 +1,55 @@
-from ipoplib import *
 from ControllerModule import ControllerModule
+
 
 class Watchdog(ControllerModule):
 
-    def __init__(self,CFxObject,CFxHandle,paramDict):
+    def __init__(self, CFxHandle, paramDict):
 
         self.CFxHandle = CFxHandle
-        self.paramDict = paramDict
-        self.CFxObject = CFxObject
+        self.CMConfig = paramDict
         self.pendingCBT = {}
         self.ipop_state = None
 
-
     def initialize(self):
-        
-        logCBT = self.CFxHandle.createCBT(initiator='Watchdog',\
-                                          recipient='Logger',\
-                                          action='info',\
+
+        logCBT = self.CFxHandle.createCBT(initiator='Watchdog',
+                                          recipient='Logger',
+                                          action='info',
                                           data="Watchdog Loaded")
         self.CFxHandle.submitCBT(logCBT)
 
-    def processCBT(self,cbt):
+    def processCBT(self, cbt):
 
         if(cbt.action == 'STORE_IPOP_STATE'):
+
             msg = cbt.data
             self.ipop_state = msg
+
         elif(cbt.action == 'QUERY_IPOP_STATE'):
+
+            cbt.action = 'QUERY_IPOP_STATE_RESP'
             cbt.data = self.ipop_state
-            cbt.initiator,cbt.recipient = cbt.recipient,cbt.initiator
+            cbt.initiator, cbt.recipient = cbt.recipient, cbt.initiator
+            
             # Submit the CBT back to the initiator with data as IPOP state
             self.CFxHandle.submitCBT(cbt)
+
         else:
-            logCBT = self.CFxHandle.createCBT(initiator='Monitor',recipient='Logger',\
-                                              action='error',\
-                                              data="Monitor: Unknown type of CBT "\
-                                              "received from: "+cbt.initiator)
+
+            logCBT = self.CFxHandle.createCBT(initiator='Monitor',
+                                              recipient='Logger',
+                                              action='error',
+                                              data="Monitor: Unrecognized CBT "
+                                              "from: " + cbt.initiator)
             self.CFxHandle.submitCBT(logCBT)
 
-
     def timer_method(self):
-        do_get_state(self.CFxObject.sock)
+
+        TincanCBT = self.CFxHandle.createCBT(initiator='Watchdog',
+                                             recipient='TincanSender',
+                                             action='DO_GET_STATE',
+                                             data='')
+        self.CFxHandle.submitCBT(TincanCBT)
 
     def terminate(self):
         pass
-
-

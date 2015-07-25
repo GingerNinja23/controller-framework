@@ -1,22 +1,22 @@
-from ipoplib import *
 from ControllerModule import ControllerModule
+
 
 class AddressMapper(ControllerModule):
 
-    def __init__(self,CFxObject,CFxHandle,paramDict):
+    def __init__(self, CFxHandle, paramDict):
 
         self.CFxHandle = CFxHandle
-        self.paramDict = paramDict
+        self.CMConfig = paramDict
         self.pendingCBT = {}
-        self.CFxObject = CFxObject
         self.uid_ip_table = {}
 
     def initialize(self):
-        
+
         # For GroupVPN
         # Populating the uid_ip_table with all the IPv4 addresses
         # and the corresponding UIDs in the /16 subnet
-        parts = self.CFxObject.CONFIG["ip4"].split(".")
+
+        parts = self.CMConfig["ip4"].split(".")
         ip_prefix = parts[0] + "." + parts[1] + "."
         for i in range(0, 255):
             for j in range(0, 255):
@@ -24,13 +24,13 @@ class AddressMapper(ControllerModule):
                 uid = gen_uid(ip)
                 self.uid_ip_table[uid] = ip
 
-        logCBT = self.CFxHandle.createCBT(initiator='AddressMapper',\
-                                          recipient='Logger',\
-                                          action='info',\
+        logCBT = self.CFxHandle.createCBT(initiator='AddressMapper',
+                                          recipient='Logger',
+                                          action='info',
                                           data="AddressMapper Loaded")
         self.CFxHandle.submitCBT(logCBT)
 
-    def processCBT(self,cbt):
+    def processCBT(self, cbt):
 
         if(cbt.action == 'ADD_MAPPING'):
 
@@ -39,14 +39,16 @@ class AddressMapper(ControllerModule):
                 self.uid_ip_table[cbt.data['uid']] = cbt.data['ip']
             except KeyError:
 
-                logCBT = self.CFxHandle.createCBT(initiator='AddressMapper',recipient='Logger',\
-                                                  action='warning',\
-                                                  data="Invalid ADD_MAPPING Configuration")
+                logCBT = self.CFxHandle.createCBT(initiator='AddressMapper',
+                                                  recipient='Logger',
+                                                  action='warning',
+                                                  data="Invalid ADD_MAPPING"
+                                                  " Configuration")
                 self.CFxHandle.submitCBT(logCBT)
 
         elif(cbt.action == 'DEL_MAPPING'):
 
-            self.uid_ip_table.pop(cbt.data) # Remove mapping if it exists
+            self.uid_ip_table.pop(cbt.data)  # Remove mapping if it exists
 
         elif(cbt.action == 'RESOLVE'):
 
@@ -57,7 +59,7 @@ class AddressMapper(ControllerModule):
             cbt.data = self.uid_ip_table.get(cbt.data)
 
             # Swap inititator and recipient
-            cbt.initiator,cbt.recipient = cbt.recipient,cbt.initiator 
+            cbt.initiator, cbt.recipient = cbt.recipient, cbt.initiator
 
             self.CFxHandle.submitCBT(cbt)
 
@@ -68,21 +70,22 @@ class AddressMapper(ControllerModule):
             ip = cbt.data
             cbt.data = None
             # Iterate through all items in dict for reverse lookup
-            for key,value in self.uid_ip_table.items():
-                if(value==ip):
+            for key, value in self.uid_ip_table.items():
+                if(value == ip):
                     cbt.data = key
                     break
 
             # Swap inititator and recipient
-            cbt.initiator,cbt.recipient = cbt.recipient,cbt.initiator
+            cbt.initiator, cbt.recipient = cbt.recipient, cbt.initiator
 
             self.CFxHandle.submitCBT(cbt)
 
         else:
-            logCBT = self.CFxHandle.createCBT(initiator='AddressMapper',recipient='Logger',\
-                                              action='warning',\
-                                              data="AddressMapper: Invalid CBT received from "\
-                                              +cbt.initiator)
+            logCBT = self.CFxHandle.createCBT(initiator='AddressMapper',
+                                              recipient='Logger',
+                                              action='warning',
+                                              data="AddressMapper: Invalid CBT "
+                                              " received from " + cbt.initiator)
             self.CFxHandle.submitCBT(logCBT)
 
     def timer_method(self):
@@ -90,5 +93,3 @@ class AddressMapper(ControllerModule):
 
     def terminate(self):
         pass
-
-

@@ -2,31 +2,33 @@
     "CFx": {
         "xmpp_username": "gingerninja@jabber.ru",
         "xmpp_password": "ginger123",
-        "xmpp_host": "jabber.ru",
-        "ip4": "192.168.5.1",
         "ip4_mask": 24,
+        "xmpp_host": "jabber.ru",
         "stat_report": true,
-        "tincan_logging": 0,
-        "controller_logging": "DEBUG"
+        "tincan_logging": 0
     },
     "TincanListener" : {
+        "socket_read_wait_time": 15,
         "joinEnabled": true,
         "dependencies": ["Logger"]
     },
     "Logger": {
+        "controller_logging": "DEBUG",
         "joinEnabled": true
     },
     "TincanDispatcher": {
         "joinEnabled": true,
         "dependencies": ["Logger"]
     },
+    "TincanSender":{
+        "dependencies": ["Logger"]
+    },
     "Monitor": {
         "joinEnabled": true,
         "dependencies": ["Logger"]
     },
-
     "BaseTopologyManager": {
-        "timer_interval": "15",
+        "timer_interval": 15,
         "joinEnabled": true,
         "dependencies": ["Logger"]
     },
@@ -35,11 +37,12 @@
         "dependencies": ["Logger"]
     },
     "AddressMapper": {
+        "ip4": "192.168.5.1",
         "joinEnabled": true,
         "dependencies": ["Logger"]
     },
     "Watchdog":{
-        "timer_interval": "15",
+        "timer_interval": 15,
         "joinEnabled": false,
         "dependencies": ["Logger"]
     }

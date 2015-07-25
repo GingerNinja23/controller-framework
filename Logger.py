@@ -1,31 +1,29 @@
 import logging
-from ipoplib import *
 from ControllerModule import ControllerModule
+
 
 class Logger(ControllerModule):
 
-    def __init__(self,CFxObject,CFxHandle,paramDict):
+    def __init__(self, CFxHandle, paramDict):
 
         self.CFxHandle = CFxHandle
-        self.paramDict = paramDict
+        self.CMConfig = paramDict
         self.pendingCBT = {}
-        self.CFxObject = CFxObject
 
     def initialize(self):
-        
-        if "controller_logging" in self.CFxObject.CONFIG:
-            level = getattr(logging, self.CFxObject.CONFIG["controller_logging"])
+
+        if "controller_logging" in self.CMConfig:
+            level = getattr(logging, self.CMConfig["controller_logging"])
             logging.basicConfig(level=level)
-            
+
         logging.info("Logger Module Loaded")
 
-        # PKTDUMP mode is for more detailed than debug logging, especially for dump
-        # packet contents in hexadecimal to log
+        # PKTDUMP mode is for more detailed than debug logging,
+        # especially for dump packet contents in hexadecimal to log
         logging.addLevelName(5, "PKTDUMP")
         logging.PKTDUMP = 5
 
-
-    def processCBT(self,cbt):
+    def processCBT(self, cbt):
 
         if(cbt.action == 'debug'):
             logging.debug(cbt.data)
@@ -36,26 +34,25 @@ class Logger(ControllerModule):
         elif(cbt.action == 'error'):
             logging.error(cbt.data)
         elif(cbt.action == "pktdump"):
-            self.pktdump(message=cbt.data.get('message'),dump=cbt.data.get('dump'))
-        else: 
+            self.pktdump(message=cbt.data.get('message'),
+                         dump=cbt.data.get('dump'))
+        else:
             logging.warning("Unrecognized CBT from "+cbt.initiator)
-
 
     def timer_method(self):
         pass
 
-    def pktdump(self,message, dump=None, *args, **argv):
+    def pktdump(self, message, dump=None, *args, **argv):
         hext = ""
-        if dump: 
-            for i in range(0, len(dump),2):
+        if dump:
+            for i in range(0, len(dump), 2):
                 hext += dump[i:i+2].encode("hex")
                 hext += " "
                 if i % 16 == 14:
                     hext += "\n"
             logging.log(5, message + "\n" + hext)
-        else: 
+        else:
             logging.log(5, message, *args, **argv)
 
     def terminate(self):
         pass
-

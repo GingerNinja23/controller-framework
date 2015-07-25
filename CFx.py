@@ -11,6 +11,7 @@ from ipoplib import *
 from CBT import CBT as _CBT
 from CFxHandle import CFxHandle
 
+
 class CFX(object):
 
     def __init__(self):
@@ -36,10 +37,7 @@ class CFX(object):
         self.ip4 = self.CONFIG["ip4"]
         self.uid = gen_uid(self.ip4) # SHA-1 hash
         self.vpn_type = "GroupVPN"
-        self.peers_ip4 = {}
-        self.peers_ip6 = {}
         self.far_peers = {}
-        self.conn_stat = {}
         if socket.has_ipv6:
             self.sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
             self.sock_svr = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
@@ -50,9 +48,6 @@ class CFX(object):
             self.sock_svr.bind((self.CONFIG["localhost"], self.CONFIG["contr_port"]))
         self.sock.bind(("", 0))
         self.sock_list = [ self.sock, self.sock_svr ]
-        self.uid_ip_table = {}
-        parts = self.CONFIG["ip4"].split(".")
-        ip_prefix = parts[0] + "." + parts[1] + "."
 
     def submitCBT(self,CBT):
 
@@ -77,7 +72,10 @@ class CFX(object):
             _CFxHandle = CFxHandle(self) # Create a CFxHandle object for each module
 
             # Instantiate the class, with CFxHandle reference and configuration parameters
-            instance = module_class(self,_CFxHandle,self.json_data[module_name])
+            if(module_name in ['TincanListener', 'TincanSender']):
+                instance = module_class(self.sock_list, _CFxHandle, self.json_data[module_name])
+            else:
+                instance = module_class(_CFxHandle,self.json_data[module_name])
 
             _CFxHandle.CMInstance = instance
             _CFxHandle.CMConfig = self.json_data[module_name]
@@ -257,14 +255,7 @@ class CFX(object):
             with open(args.config_file) as f:
 
                 loaded_config = json.load(f)
-                # CFx parameters retrieved from config.json
-                try:
-                    CFxConfig = loaded_config['CFx']
-                except KeyError:
-                    logging.error("Invalid Config for CFx. Terminating")
-                    sys.exit()
-
-            self.CONFIG.update(CFxConfig)
+                self.CONFIG.update(loaded_config)
             
         if args.config_string:
             # Load the config string

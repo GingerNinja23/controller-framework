@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractmethod # Only Python 2.6 and above
+from abc import ABCMeta, abstractmethod  # Only Python 2.6 and above
 
 
 # Defining an abstract class which the controller
@@ -9,7 +9,7 @@ class ControllerModule(object):
 
     @abstractmethod
     def initialize(self):
-       pass
+        pass
 
     @abstractmethod
     def processCBT(self):
@@ -22,4 +22,3 @@ class ControllerModule(object):
     @abstractmethod
     def terminate(self):
         pass
-
