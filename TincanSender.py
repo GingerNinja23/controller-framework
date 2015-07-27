@@ -1,4 +1,4 @@
-from ipoplib import *
+import ipoplib
 from ControllerModule import ControllerModule
 
 
@@ -29,31 +29,37 @@ class TincanSender(ControllerModule):
             nid = cbt.data.get('nid')
             sec = cbt.data.get('sec')
             cas = cbt.data.get('cas')
-            do_create_link(self.sock, uid, fpr, nid, sec, cas)
+            ipoplib.do_create_link(self.sock, uid, fpr, nid, sec, cas)
 
         elif(cbt.action == 'DO_TRIM_LINK'):
-            do_trim_link(self.sock, cbt.data)
+
+            # cbt.data contains the UID of the peer
+            ipoplib.do_trim_link(self.sock, cbt.data)
 
         elif(cbt.action == 'DO_GET_STATE'):
-            do_get_state(self.sock)
+
+            ipoplib.do_get_state(self.sock)
 
         elif(cbt.action == 'DO_SEND_MSG'):
+
             method = cbt.data.get("method")
             overlay_id = cbt.data.get("overlay_id")
             uid = cbt.data.get("uid")
             data = cbt.data.get("data")
-            do_send_msg(self.sock, method, overlay_id, uid, data)
+            ipoplib.do_send_msg(self.sock, method, overlay_id, uid, data)
 
         elif(cbt.action == 'DO_SET_REMOTE_IP'):
-            do_set_remote_ip(self.CFxObject.sock, uid, ip4, gen_ip6(uid))
+
+            ipoplib.do_set_remote_ip(self.CFxObject.sock,
+                                     uid, ip4, gen_ip6(uid))
 
         elif(cbt.action == 'ECHO_REPLY'):
             m_type = cbt.data.get('m_type')
             dest_addr = cbt.data.get('dest_addr')
             dest_port = cbt.data.get('dest_port')
-            make_remote_call(self.sock_svr, m_type=m_type,
-                             dest_addr=dest_addr, dest_port=dest_port,
-                             payload=None, type="echo_reply")
+            ipoplib.make_remote_call(self.sock_svr, m_type=m_type,
+                                     dest_addr=dest_addr, dest_port=dest_port,
+                                     payload=None, type="echo_reply")
 
         else:
             logCBT = self.CFxHandle.createCBT(initiator='TincanSender',

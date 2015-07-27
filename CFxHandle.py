@@ -2,33 +2,33 @@ import Queue
 import logging
 import threading
 
+
 class CFxHandle(object):
 
-    def __init__(self,CFxObject):
+    def __init__(self, CFxObject):
 
-        self.CMQueue = Queue.Queue() # For CBTs
-        self.CMInstance = None # CFx assigns value to this variable
-        self.CMThread = None # CM worker thread
-        self.CMConfig = None # Config of the CM from config.json
-        self.__CFxObject = CFxObject # CFx object reference
+        self.CMQueue = Queue.Queue()  # CBT queue
+        self.CMInstance = None
+        self.CMThread = None  # CM worker thread
+        self.CMConfig = None
+        self.__CFxObject = CFxObject  # CFx object reference
         self.joinEnabled = False
         self.timer_thread = None
 
     def __getCBT(self):
 
-        cbt = self.CMQueue.get() # Blocking call
+        cbt = self.CMQueue.get()  # Blocking call
         return cbt
 
-    def submitCBT(self,cbt):
+    def submitCBT(self, cbt):
 
-        # Submit to CFx which then submits it to the appropriate CM
-        self.__CFxObject.submitCBT(cbt) 
+        # Submit CBT to CFx which then puts it in the appropriate CM queue
+        self.__CFxObject.submitCBT(cbt)
 
-    def createCBT(self,initiator='',recipient='',action='',data=''):
+    def createCBT(self, initiator='', recipient='', action='', data=''):
 
-        # Create and return an empty CBT. The variables of the CBT 
-        # will be assigned by the CM
-        cbt = self.__CFxObject.createCBT(initiator,recipient,action,data)
+        # Create and return a CBT with optional parameters
+        cbt = self.__CFxObject.createCBT(initiator, recipient, action, data)
         return cbt
 
     def freeCBT(self):
@@ -42,9 +42,8 @@ class CFxHandle(object):
         # Intialize CM first
         self.CMInstance.initialize()
 
-        # Create worker thread and add to startThreadList
-        # CFx will then start all the threads
-        self.CMThread = threading.Thread(target = self.__worker)
+        # Create worker thread which is started by CFx
+        self.CMThread = threading.Thread(target=self.__worker)
         self.CMThread.setDaemon(True)
 
         # Check whether CM requires join() or not
@@ -55,26 +54,29 @@ class CFxHandle(object):
         # If not then assume timer functionality not required
 
         timer_enabled = False
+
         try:
             interval = int(self.CMConfig['timer_interval'])
             timer_enabled = True
         except ValueError:
-            print "Invalid timer configuration for "+key+\
+            print "Invalid timer configuration for " + key +\
                   ". Timer has been disabled for this module"
         except KeyError:
             pass
 
         if(timer_enabled):
 
-            # Create timer worker thread
-            self.timer_thread = threading.Thread(target = self.__timer_worker,\
+            # Create timer worker thread. CFx is responsible to start
+            # this thread
+            self.timer_thread = threading.Thread(target=self.__timer_worker,
                                                  args=(interval,))
             self.timer_thread.setDaemon(True)
 
     def __worker(self):
-        
+
         # Get CBT from local queue, and call processCBT() which
-        # is responsible for processing one CBT given as a parameter
+        # is responsible for processing one CBT, given as a parameter
+
         while(True):
 
             cbt = self.__getCBT()
@@ -88,12 +90,12 @@ class CFxHandle(object):
             else:
                 self.CMInstance.processCBT(cbt)
 
-    def __timer_worker(self,interval):
+    def __timer_worker(self, interval):
 
-        # Call the timer_method of CMs at a given freqeuency
+        # Call the timer_method of CMs every x seconds
+        # x is specified in config.json as timer_interval
         event = threading.Event()
 
         while(True):
             event.wait(interval)
             self.CMInstance.timer_method()
-

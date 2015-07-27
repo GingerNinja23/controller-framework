@@ -12,7 +12,6 @@ class TincanDispatcher(ControllerModule):
 
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
-        self.pendingCBT = {}
 
     def initialize(self):
 
@@ -24,6 +23,10 @@ class TincanDispatcher(ControllerModule):
 
     def processCBT(self, cbt):
 
+        data = cbt.data[0]
+        addr = cbt.data[1]
+
+        # Data format:
         # ---------------------------------------------------------------
         # | offset(byte) |                                              |
         # ---------------------------------------------------------------
@@ -32,9 +35,8 @@ class TincanDispatcher(ControllerModule):
         # |      2       | Payload (JSON formatted control message)     |
         # ---------------------------------------------------------------
 
-        data = cbt.data[0]
-        addr = cbt.data[1]
         if data[0] != ipop_ver:
+
             logCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
                                               recipient='Logger',
                                               action='debug',
@@ -46,6 +48,7 @@ class TincanDispatcher(ControllerModule):
             sys.exit()
 
         if data[1] == tincan_control:
+
             msg = json.loads(data[2:])
             logCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
                                               recipient='Logger',
@@ -65,7 +68,8 @@ class TincanDispatcher(ControllerModule):
                    'dest_port': addr[1]
                 }
 
-                echoCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
+                echoCBT = self.CFxHandle.createCBT(initiator='Tincan'
+                                                   'Dispatcher',
                                                    recipient='TincanSender',
                                                    action='ECHO_REPLY',
                                                    data=echo_data)
@@ -73,28 +77,32 @@ class TincanDispatcher(ControllerModule):
 
             elif msg_type == "local_state":
 
-                newCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
-                                                  recipient='Watchdog',
-                                                  action='STORE_IPOP_STATE',
-                                                  data=msg)
-                self.CFxHandle.submitCBT(newCBT)
+                # Send CBT to Watchdog to store ipop_state
+
+                CBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
+                                               recipient='Watchdog',
+                                               action='STORE_IPOP_STATE',
+                                               data=msg)
+                self.CFxHandle.submitCBT(CBT)
 
             elif msg_type == "peer_state":
 
-                newCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
-                                                  recipient='Monitor',
-                                                  action='STORE_PEER_STATE',
-                                                  data=msg)
-                self.CFxHandle.submitCBT(newCBT)
+                # Send CBT to Monitor to store peer state
+
+                CBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
+                                               recipient='Monitor',
+                                               action='STORE_PEER_STATE',
+                                               data=msg)
+                self.CFxHandle.submitCBT(CBT)
 
             elif (msg_type == "con_stat" or msg_type == "con_req" or
                   msg_type == "con_resp" or msg_type == "send_msg"):
 
-                newCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
-                                                  recipient='BaseTopologyManager',
-                                                  action='TINCAN_MSG',
-                                                  data=msg)
-                self.CFxHandle.submitCBT(newCBT)
+                CBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
+                                               recipient='BaseTopologyManager',
+                                               action='TINCAN_MSG',
+                                               data=msg)
+                self.CFxHandle.submitCBT(CBT)
 
         #  If a packet that is destined to yet no p2p connection
         #  established node, the packet as a whole is forwarded to
@@ -114,12 +122,15 @@ class TincanDispatcher(ControllerModule):
             pass
 
         else:
+
             logCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
                                               recipient='Logger',
                                               action='error',
                                               data="Tincan: "
-                                              "Unrecognized message received")
+                                              "Unrecognized message "
+                                              "received from Tincan")
             self.CFxHandle.submitCBT(logCBT)
+
             logCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
                                               recipient='Logger',
                                               action='debug',

@@ -1,3 +1,4 @@
+import select
 from threading import Thread
 from ControllerModule import ControllerModule
 
@@ -7,9 +8,10 @@ class TincanListener(ControllerModule):
     def __init__(self, sock_list, CFxHandle, paramDict):
 
         self.CFxHandle = CFxHandle
+        self.sock = sock_list[0]
+        self.sock_svr = sock_list[1]
         self.sock_list = sock_list
         self.CMConfig = paramDict
-        self.pendingCBT = {}
 
     def initialize(self):
 
@@ -34,14 +36,16 @@ class TincanListener(ControllerModule):
             socks, _, _ = select.select(self.sock_list, [], [],
                                         self.CMConfig["socket_read_wait_time"])
 
-            if(socks):
-                sock_to_read = socks[0]
-                data, addr = sock_to_read.recvfrom(self.CMConfig["buf_size"])
-                cbt = self.CFxHandle.createCBT(initiator='TincanListener',
-                                               recipient='TincanDispatcher',
-                                               action='TINCAN_PKT',
-                                               data=[data, addr])
-                self.CFxHandle.submitCBT(cbt)
+            for sock in socks:
+                if(sock == self.sock or sock == self.sock_svr):
+                    sock_to_read = socks[0]
+                    data,adr = sock_to_read.recvfrom(self.CMConfig["buf_size"])
+                    cbt = self.CFxHandle.createCBT(initiator='TincanListener',
+                                                   recipient='Tincan'
+                                                   'Dispatcher',
+                                                   action='TINCAN_PKT',
+                                                   data=[data, adr])
+                    self.CFxHandle.submitCBT(cbt)
 
     def terminate(self):
         pass
