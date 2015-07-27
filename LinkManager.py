@@ -45,6 +45,13 @@ class LinkManager(ControllerModule):
                                                  data=cbt.data)
             self.CFxHandle.submitCBT(TincanCBT)
 
+            logCBT = self.CFxHandle.createCBT(initiator='LinkManager',
+                                              recipient='Logger',
+                                              action='info',
+                                              data="Trimming Link "
+                                              "with peer " + cbt.data)
+            self.CFxHandle.submitCBT(logCBT)
+
         else:
             logCBT = self.CFxHandle.createCBT(initiator='LinkManager',
                                               recipient='Logger',

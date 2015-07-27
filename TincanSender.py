@@ -50,8 +50,10 @@ class TincanSender(ControllerModule):
 
         elif(cbt.action == 'DO_SET_REMOTE_IP'):
 
-            ipoplib.do_set_remote_ip(self.CFxObject.sock,
-                                     uid, ip4, gen_ip6(uid))
+            uid = cbt.data.get("uid")
+            ip4 = cbt.data.get("ip4")
+            ipoplib.do_set_remote_ip(self.sock,
+                                     uid, ip4, ipoplib.gen_ip6(uid))
 
         elif(cbt.action == 'ECHO_REPLY'):
             m_type = cbt.data.get('m_type')

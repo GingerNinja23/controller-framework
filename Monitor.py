@@ -1,3 +1,4 @@
+import time
 from ControllerModule import ControllerModule
 
 
@@ -58,6 +59,16 @@ class Monitor(ControllerModule):
                 cbt.initiator, cbt.recipient = cbt.recipient, cbt.initiator
                 cbt.data = self.peers.get(peer_uid)
                 self.CFxHandle.submitCBT(cbt)
+
+            elif(cbt.action == 'QUERY_PEER_LIST'):
+
+                # Respond to a CM requesting state of a particular peer
+
+                cbt.action = 'QUERY_PEER_LIST_RESP'
+                cbt.initiator, cbt.recipient = cbt.recipient, cbt.initiator
+                cbt.data = self.peers
+                self.CFxHandle.submitCBT(cbt)
+
 
             elif(cbt.action == 'QUERY_CONN_STAT'):
 
@@ -138,7 +149,7 @@ class Monitor(ControllerModule):
 
                     # Retrieve values from response CBTs
                     for key in self.CBTMappings[sourceCBT_uid]:
-                        if(self.pendingCBT[key].action == 'QUERY_IPOP_STATE'):
+                        if(self.pendingCBT[key].action == 'QUERY_IPOP_STATE_RESP'):
                             self.ipop_state = self.pendingCBT[key].data
 
                     # Process the source CBT, once all the required variables

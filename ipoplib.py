@@ -16,7 +16,6 @@ import struct
 import sys
 import time
 import urllib2
-import keyring
 
 from threading import Timer
 
@@ -39,10 +38,7 @@ CONFIG = {
         "contr_port": 5801,
         "local_uid": "",
         "uid_size": 40,
-        "sec": True,
         "router_mode": False,
-        "on-demand_connection" : False,
-        "on-demand_inactive_timeout" : 600,
         "tincan_logging": 1,
         "icc" : False, # Inter-Controller Connection
         "icc_port" : 30000,
@@ -76,6 +72,9 @@ CONFIG = {
     },
     "BaseTopologyManager": {
         "link_trimmer_wait_time": 30,
+        "on-demand_connection" : False,
+        "on-demand_inactive_timeout" : 600,
+        "sec": True,
         "timer_interval": 15,
         "joinEnabled": True
     },
@@ -177,16 +176,16 @@ def gen_ip4(uid, peer_map, ip4=None):
 
 def gen_ip6(uid, ip6=None):
     if ip6 is None:
-        ip6 = CONFIG["ip6_prefix"]
+        ip6 = CONFIG["CFx"]["ip6_prefix"]
     for i in range(0, 16, 4): ip6 += ":" + uid[i:i+4]
     return ip6
 
 def gen_uid(ip4):
-    return hashlib.sha1(ip4).hexdigest()[:CONFIG["uid_size"]]
+    return hashlib.sha1(ip4).hexdigest()[:CONFIG["CFx"]["uid_size"]]
 
 def make_call(sock, payload=None, **params):
-    if socket.has_ipv6: dest = (CONFIG["localhost6"], CONFIG["svpn_port"])
-    else: dest = (CONFIG["localhost"], CONFIG["svpn_port"])
+    if socket.has_ipv6: dest = (CONFIG["CFx"]["localhost6"], CONFIG["CFx"]["svpn_port"])
+    else: dest = (CONFIG["CFx"]["localhost"], CONFIG["CFx"]["svpn_port"])
     if payload == None:
         return sock.sendto(ipop_ver + tincan_control + json.dumps(params), dest)
     else:
@@ -200,8 +199,8 @@ def make_remote_call(sock, dest_addr, dest_port, m_type, payload, **params):
         return sock.sendto(ipop_ver + m_type + payload, dest)
 
 def send_packet(sock, msg):
-    if socket.has_ipv6: dest = (CONFIG["localhost6"], CONFIG["svpn_port"])
-    else: dest = (CONFIG["localhost"], CONFIG["svpn_port"])
+    if socket.has_ipv6: dest = (CONFIG["CFx"]["localhost6"], CONFIG["CFx"]["svpn_port"])
+    else: dest = (CONFIG["CFx"]["localhost"], CONFIG["CFx"]["svpn_port"])
     return sock.sendto(ipop_ver + tincan_packet + msg, dest)
 
 def make_arp(src_uid=null_uid, dest_uid=null_uid, dest_mac=bc_mac,\
@@ -238,10 +237,10 @@ def do_register_service(sock, username, password, host):
 
 def do_create_link(sock, uid, fpr, overlay_id, sec, cas, stun=None, turn=None):
     if stun is None:
-        stun = random.choice(CONFIG["stun"])
+        stun = random.choice(CONFIG["CFx"]["stun"])
     if turn is None:
-        if CONFIG["turn"]:
-            turn = random.choice(CONFIG["turn"])
+        if CONFIG["CFx"]["turn"]:
+            turn = random.choice(CONFIG["CFx"]["turn"])
         else:
             turn = {"server": "", "user": "", "pass": ""}
     return make_call(sock, m="create_link", uid=uid, fpr=fpr,
@@ -259,7 +258,7 @@ def do_set_local_ip(sock, uid, ip4, ip6, ip4_mask, ip6_mask, subnet_mask,
                      subnet_mask=subnet_mask, switchmode=switchmode)
 
 def do_set_remote_ip(sock, uid, ip4, ip6):
-    if (CONFIG["switchmode"] == 1):
+    if (CONFIG["CFx"]["switchmode"] == 1):
         return make_call(sock, m="set_remote_ip", uid=uid, ip4="127.0.0.1",\
                          ip6="::1/128")
     else: 
@@ -284,8 +283,8 @@ def setup_config(config):
     """Validate config and set default value here. Return ``True`` if config is
     changed.
     """
-    if not config["local_uid"]:
-        uid = binascii.b2a_hex(os.urandom(CONFIG["uid_size"] / 2))
+    if not config['CFx']['local_uid']:
+        uid = binascii.b2a_hex(os.urandom(CONFIG['CFx']['uid_size'] / 2))
         config["local_uid"] = uid
         return True # modified
     return False

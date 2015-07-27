@@ -1,6 +1,5 @@
 from ControllerModule import ControllerModule
 
-
 class BaseTopologyManager(ControllerModule):
 
     def __init__(self, CFxHandle, paramDict):
@@ -174,7 +173,7 @@ class BaseTopologyManager(ControllerModule):
                     for key in self.CBTMappings[sourceCBT_uid]:
                         if(self.pendingCBT[key].action == 'QUERY_PEER_LIST_RESP'):
                             peer_list = self.pendingCBT[key].data
-                        elif(self.pendingCBT[key].action == 'QUERY_IPOP_STATE'):
+                        elif(self.pendingCBT[key].action == 'QUERY_IPOP_STATE_RESP'):
                             ipop_state = self.pendingCBT[key].data
                     self.__link_trimmer(peer_list, ipop_state)
 
@@ -216,7 +215,6 @@ class BaseTopologyManager(ControllerModule):
         cbtdata = {
             "uid": uid,
             "ip4": ip4,
-            "ip6": gen_ip6(uid)
         }
 
         TincanCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',

@@ -4,10 +4,11 @@ import sys
 import json
 import signal
 import socket
-import logging
+import ipoplib
+import getpass
+import argparse
 import threading
 import importlib
-import ipoplib
 from collections import OrderedDict
 from CBT import CBT as _CBT
 from CFxHandle import CFxHandle
@@ -36,13 +37,13 @@ class CFX(object):
         self.host = self.CONFIG['CFx']["xmpp_host"]
         self.ip4 = self.CONFIG['AddressMapper']["ip4"]
         self.uid = ipoplib.gen_uid(self.ip4)  # SHA-1 hash
-        self.vpn_type = "GroupVPN"
+        self.vpn_type = self.CONFIG['CFx']['vpn_type']
 
         if socket.has_ipv6:
             self.sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
             self.sock_svr = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-            self.sock_svr.bind((self.['CFx']CONFIG["localhost6"],
-                                self.['CFx']CONFIG["contr_port"]))
+            self.sock_svr.bind((self.CONFIG['CFx']["localhost6"],
+                                self.CONFIG['CFx']["contr_port"]))
         else:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.sock_svr = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -74,19 +75,19 @@ class CFX(object):
         # Make Tincan API calls to initialize the controller
 
         # Set logging level
-        ipoplib.do_set_logging(self.sock, CONFIG["tincan_logging"])
+        ipoplib.do_set_logging(self.sock, self.CONFIG["CFx"]["tincan_logging"])
 
         # Callback endpoint to receive notifications
         ipoplib.do_set_cb_endpoint(self.sock, self.sock.getsockname())
 
         # Configure the local node
-        if not CONFIG["router_mode"]:
+        if not self.CONFIG["CFx"]["router_mode"]:
             ipoplib.do_set_local_ip(self.sock, self.uid, self.ip4,
                                     ipoplib.gen_ip6(self.uid),
-                                    self.CONFIG["ip4_mask"],
-                                    self.CONFIG["ip6_mask"],
-                                    self.CONFIG["subnet_mask"],
-                                    self.CONFIG["switchmode"])
+                                    self.CONFIG["CFx"]["ip4_mask"],
+                                    self.CONFIG["CFx"]["ip6_mask"],
+                                    self.CONFIG["CFx"]["subnet_mask"],
+                                    self.CONFIG["CFx"]["switchmode"])
 
         else:
             ipoplib.do_set_local_ip(self.sock, self.uid,
@@ -99,13 +100,13 @@ class CFX(object):
         # Register to the XMPP server
         ipoplib.do_register_service(self.sock, self.user,
                                     self.password, self.host)
-        ipoplib.do_set_switchmode(self.sock, CONFIG["switchmode"])
-        ipoplib.do_set_trimpolicy(self.sock, CONFIG["trim_enabled"])
+        ipoplib.do_set_switchmode(self.sock, self.CONFIG["CFx"]["switchmode"])
+        ipoplib.do_set_trimpolicy(self.sock, self.CONFIG["CFx"]["trim_enabled"])
 
         # Retrieve the state of the local node
         ipoplib.do_get_state(self.sock)
 
-        logging.info("CFx initialized. Loading Controller Modules\n")
+        print "CFx initialized. Loading Controller Modules\n"
 
         self.loaded_modules = ['CFx']
 
@@ -119,8 +120,7 @@ class CFX(object):
                     pass
 
         if(self.detect_cyclic_dependency(dependency_graph)):
-            logging.error("Circular dependency detected in"
-                          " config.json. Exiting")
+            print "Circular dependency detected in config.json. Exiting")
             sys.exit()
 
         # Iterate through the modules mentioned in config.json
@@ -205,7 +205,7 @@ class CFX(object):
 
         # This is a private method, and cannot be called by the CMs
 
-        logging.info('Signal handler called with signal ' + signum)
+        print 'Signal handler called with signal ' + str(signum)
 
     def parse_config(self):
 
@@ -243,29 +243,25 @@ class CFX(object):
                 if(self.CONFIG.get(key, None)):
                     self.CONFIG[key].update(loaded_config[key])
 
-        need_save = setup_config(self.CONFIG)
+        need_save = ipoplib.setup_config(self.CONFIG)
         if need_save and args.config_file and args.update_config:
             with open(args.config_file, "w") as f:
                 json.dump(self.CONFIG, f, indent=4, sort_keys=True)
 
-        if not ("xmpp_username" in self.CONFIG and "xmpp_host" in self.CONFIG):
+        if not ("xmpp_username" in self.CONFIG["CFx"] and "xmpp_host" in self.CONFIG["CFx"]):
             raise ValueError("At least 'xmpp_username' and 'xmpp_host' "
                              "must be specified in config file or string")
 
-        if "xmpp_password" not in self.CONFIG:
-            prompt = "\nPassword for %s: " % self.CONFIG["xmpp_username"]
+        if "xmpp_password" not in self.CONFIG["CFx"]:
+            prompt = "\nPassword for %s: " % self.CONFIG["CFx"]["xmpp_username"]
             if args.pwdstdout:
-                self.CONFIG["xmpp_password"] = getpass.getpass(prompt,
+                self.CONFIG["CFx"]["xmpp_password"] = getpass.getpass(prompt,
                                                                stream=sys.stdout)
             else:
-                self.CONFIG["xmpp_password"] = getpass.getpass(prompt)
-
-        if "controller_logging" in self.CONFIG:
-            level = getattr(logging, self.CONFIG["controller_logging"])
-            logging.basicConfig(level=level)
+                self.CONFIG["CFx"]["xmpp_password"] = getpass.getpass(prompt)
 
         if args.ip_config:
-            load_peer_ip_config(args.ip_config)
+            ipoplib.load_peer_ip_config(args.ip_config)
 
     def waitForShutdownEvent(self):
 

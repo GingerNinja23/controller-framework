@@ -35,7 +35,7 @@ class TincanDispatcher(ControllerModule):
         # |      2       | Payload (JSON formatted control message)     |
         # ---------------------------------------------------------------
 
-        if data[0] != ipop_ver:
+        if data[0] != self.ipop_ver:
 
             logCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
                                               recipient='Logger',
@@ -47,7 +47,7 @@ class TincanDispatcher(ControllerModule):
             self.CFxHandle.submitCBT(logCBT)
             sys.exit()
 
-        if data[1] == tincan_control:
+        if data[1] == self.tincan_control:
 
             msg = json.loads(data[2:])
             logCBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
@@ -118,7 +118,7 @@ class TincanDispatcher(ControllerModule):
         # |-------------------------------------------------------------|
 
         # Pass for basic all-to-all GVPN
-        elif data[1] == tincan_packet:
+        elif data[1] == self.tincan_packet:
             pass
 
         else:

@@ -1,4 +1,5 @@
 from ControllerModule import ControllerModule
+from ipoplib import gen_uid
 
 
 class AddressMapper(ControllerModule):
