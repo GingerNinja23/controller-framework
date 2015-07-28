@@ -8,6 +8,7 @@
 ```
 wget -O controller-framework-gvpn_beta.tar.gz https://goo.gl/BjKMGg
 tar xvzf controller-framework-gvpn_beta.tar.gz
+cd controller-framework-gvpn_beta
 ```
 * Change config.json according to the requirement. Ensure that the IP addresses are different for all the nodes.
 
