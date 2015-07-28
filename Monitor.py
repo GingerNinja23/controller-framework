@@ -69,7 +69,6 @@ class Monitor(ControllerModule):
                 cbt.data = self.peers
                 self.CFxHandle.submitCBT(cbt)
 
-
             elif(cbt.action == 'QUERY_CONN_STAT'):
 
                 # Respond to a CM requesting conn_stat of a particular peer

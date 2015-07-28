@@ -1,5 +1,6 @@
 from ControllerModule import ControllerModule
 
+
 class BaseTopologyManager(ControllerModule):
 
     def __init__(self, CFxHandle, paramDict):

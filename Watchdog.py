@@ -19,7 +19,7 @@ class Watchdog(ControllerModule):
 
     def processCBT(self, cbt):
 
-        # Store ipop_state locally        
+        # Store ipop_state locally
         if(cbt.action == 'STORE_IPOP_STATE'):
 
             msg = cbt.data

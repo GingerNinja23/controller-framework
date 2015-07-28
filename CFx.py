@@ -1,14 +1,15 @@
 #!/usr/bin/env python
+
 import os
 import sys
 import json
 import signal
 import socket
 import ipoplib
-import getpass
 import argparse
 import threading
 import importlib
+from getpass import getpass
 from collections import OrderedDict
 from CBT import CBT as _CBT
 from CFxHandle import CFxHandle
@@ -100,8 +101,10 @@ class CFX(object):
         # Register to the XMPP server
         ipoplib.do_register_service(self.sock, self.user,
                                     self.password, self.host)
-        ipoplib.do_set_switchmode(self.sock, self.CONFIG["CFx"]["switchmode"])
-        ipoplib.do_set_trimpolicy(self.sock, self.CONFIG["CFx"]["trim_enabled"])
+        ipoplib.do_set_switchmode(self.sock,
+                                  self.CONFIG["CFx"]["switchmode"])
+        ipoplib.do_set_trimpolicy(self.sock,
+                                  self.CONFIG["CFx"]["trim_enabled"])
 
         # Retrieve the state of the local node
         ipoplib.do_get_state(self.sock)
@@ -120,7 +123,7 @@ class CFX(object):
                     pass
 
         if(self.detect_cyclic_dependency(dependency_graph)):
-            print "Circular dependency detected in config.json. Exiting")
+            print "Circular dependency detected in config.json. Exiting"
             sys.exit()
 
         # Iterate through the modules mentioned in config.json
@@ -248,17 +251,18 @@ class CFX(object):
             with open(args.config_file, "w") as f:
                 json.dump(self.CONFIG, f, indent=4, sort_keys=True)
 
-        if not ("xmpp_username" in self.CONFIG["CFx"] and "xmpp_host" in self.CONFIG["CFx"]):
+        if not ("xmpp_username" in self.CONFIG["CFx"] and
+                "xmpp_host" in self.CONFIG["CFx"]):
             raise ValueError("At least 'xmpp_username' and 'xmpp_host' "
                              "must be specified in config file or string")
 
         if "xmpp_password" not in self.CONFIG["CFx"]:
-            prompt = "\nPassword for %s: " % self.CONFIG["CFx"]["xmpp_username"]
+            prompt = "\nPassword for %s:" % self.CONFIG["CFx"]["xmpp_username"]
             if args.pwdstdout:
-                self.CONFIG["CFx"]["xmpp_password"] = getpass.getpass(prompt,
-                                                               stream=sys.stdout)
+                self.CONFIG["CFx"]["xmpp_password"] = getpass(prompt,
+                                                              stream=sys.stdout)
             else:
-                self.CONFIG["CFx"]["xmpp_password"] = getpass.getpass(prompt)
+                self.CONFIG["CFx"]["xmpp_password"] = getpass(prompt)
 
         if args.ip_config:
             ipoplib.load_peer_ip_config(args.ip_config)

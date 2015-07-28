@@ -85,8 +85,9 @@ class AddressMapper(ControllerModule):
             logCBT = self.CFxHandle.createCBT(initiator='AddressMapper',
                                               recipient='Logger',
                                               action='warning',
-                                              data="AddressMapper: Invalid CBT "
-                                              " received from " + cbt.initiator)
+                                              data="AddressMapper: "
+                                              "Invalid CBT received"
+                                              " from " + cbt.initiator)
             self.CFxHandle.submitCBT(logCBT)
 
     def timer_method(self):
