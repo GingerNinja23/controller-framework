@@ -6,8 +6,8 @@
 
 * Download and extract GroupVPN
 ```
-wget https://goo.gl/IJFMi8
-tar xvzf gvpn_min_cfx.tar.gz
+wget -O controller-framework-gvpn_beta.tar.gz https://goo.gl/BjKMGg
+tar xvzf controller-framework-gvpn_beta.tar.gz
 ```
 * Change config.json according to the requirement. Ensure that the IP addresses are different for all the nodes.
 
