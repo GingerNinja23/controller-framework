@@ -23,18 +23,12 @@ from threading import Timer
 
 CONFIG = {
     "CFx": {
-        "stun": ["stun.l.google.com:19302", "stun1.l.google.com:19302",
-             "stun2.l.google.com:19302", "stun3.l.google.com:19302",
-             "stun4.l.google.com:19302"],
-        "turn": [],  # Contains dicts with "server", "user", "pass" keys
-        # "ip4": "172.16.0.1",
-        "localhost": "127.0.0.1",
+
         "ip6_prefix": "fd50:0dbc:41f2:4a3c",
-        "localhost6": "::1",
+
         "ip4_mask": 24,
         "ip6_mask": 64,
         "subnet_mask": 32,
-        "svpn_port": 5800,
         "contr_port": 5801,
         "local_uid": "",
         "uid_size": 40,
@@ -42,7 +36,6 @@ CONFIG = {
         "tincan_logging": 1,
         "icc" : False, # Inter-Controller Connection
         "icc_port" : 30000,
-        "switchmode" : 0,
         "trim_enabled": False,
         "multihop": False,
         "multihop_cl": 100, #Multihop connection count limit
@@ -86,6 +79,14 @@ CONFIG = {
         "joinEnabled": True
     },
     "TincanSender": {
+        "stun": ["stun.l.google.com:19302", "stun1.l.google.com:19302",
+             "stun2.l.google.com:19302", "stun3.l.google.com:19302",
+             "stun4.l.google.com:19302"],
+        "turn": [],
+        "switchmode" : 0,
+        "localhost": "127.0.0.1",
+        "svpn_port": 5800,
+        "localhost6": "::1",
         "joinEnabled": True        
      },
     "Watchdog":{
@@ -176,7 +177,7 @@ def gen_ip4(uid, peer_map, ip4=None):
 
 def gen_ip6(uid, ip6=None):
     if ip6 is None:
-        ip6 = CONFIG["CFx"]["ip6_prefix"]
+        ip6 = CONFIG["TincanSender"]["ip6_prefix"]
     for i in range(0, 16, 4): ip6 += ":" + uid[i:i+4]
     return ip6
 
@@ -184,8 +185,8 @@ def gen_uid(ip4):
     return hashlib.sha1(ip4).hexdigest()[:CONFIG["CFx"]["uid_size"]]
 
 def make_call(sock, payload=None, **params):
-    if socket.has_ipv6: dest = (CONFIG["CFx"]["localhost6"], CONFIG["CFx"]["svpn_port"])
-    else: dest = (CONFIG["CFx"]["localhost"], CONFIG["CFx"]["svpn_port"])
+    if socket.has_ipv6: dest = (CONFIG["TincanSender"]["localhost6"], CONFIG["TincanSender"]["svpn_port"])
+    else: dest = (CONFIG["TincanSender"]["localhost"], CONFIG["TincanSender"]["svpn_port"])
     if payload == None:
         return sock.sendto(ipop_ver + tincan_control + json.dumps(params), dest)
     else:
@@ -199,8 +200,8 @@ def make_remote_call(sock, dest_addr, dest_port, m_type, payload, **params):
         return sock.sendto(ipop_ver + m_type + payload, dest)
 
 def send_packet(sock, msg):
-    if socket.has_ipv6: dest = (CONFIG["CFx"]["localhost6"], CONFIG["CFx"]["svpn_port"])
-    else: dest = (CONFIG["CFx"]["localhost"], CONFIG["CFx"]["svpn_port"])
+    if socket.has_ipv6: dest = (CONFIG["TincanSender"]["localhost6"], CONFIG["TincanSender"]["svpn_port"])
+    else: dest = (CONFIG["CFx"]["TincanSender"], CONFIG["TincanSender"]["svpn_port"])
     return sock.sendto(ipop_ver + tincan_packet + msg, dest)
 
 def make_arp(src_uid=null_uid, dest_uid=null_uid, dest_mac=bc_mac,\
@@ -258,7 +259,7 @@ def do_set_local_ip(sock, uid, ip4, ip6, ip4_mask, ip6_mask, subnet_mask,
                      subnet_mask=subnet_mask, switchmode=switchmode)
 
 def do_set_remote_ip(sock, uid, ip4, ip6):
-    if (CONFIG["CFx"]["switchmode"] == 1):
+    if (CONFIG["TincanSender"]["switchmode"] == 1):
         return make_call(sock, m="set_remote_ip", uid=uid, ip4="127.0.0.1",\
                          ip6="::1/128")
     else: 
