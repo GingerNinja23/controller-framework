@@ -129,53 +129,6 @@ class BaseTopologyManager(ControllerModule):
                         self.create_connection(msg["uid"], fpr, 1,\
                                                CONFIG["sec"], cas, ip4)
 
-                        if self.CMConfig["on-demand_connection"]:
-                            idle_peer_CBT = self.CFxHandle.createCBT(initiator='BaseTopology'
-                                                                     'Manager',
-                                                                     recipient='Monitor',
-                                                                     action='STORE_IDLE_'
-                                                                     'PEER_STATE',
-                                                                     data={'uid': msg['uid'],
-                                                                            'idle_peer_state': msg})
-                            self.CFxHandle.submitCBT(logCBT)
-
-                        else:
-                            if self.check_collision(msg_type, msg["uid"], conn_stat):
-                                return
-                            fpr_len = len(self.ipop_state["_fpr"])
-                            fpr = msg["data"][:fpr_len]
-                            cas = msg["data"][fpr_len + 1:]
-                            self.create_connection(msg["uid"], fpr, 1,
-                                                   self.CMConfig["sec"], cas, ip4)
-
-                    elif msg_type == "con_resp":
-                        for key in self.CBTMappings[sourceCBT_uid]:
-                            if(self.pendingCBT[key].action ==
-                                    'QUERY_IPOP_STATE'):
-                                self.ipop_state = self.pendingCBT[key].data
-                            elif(self.pendingCBT[key].action ==
-                                    'RESOLVE_RESP'):
-                                ip4 = self.pendingCBT[key].data
-                            elif(self.pendingCBT[key].action ==
-                                    'QUERY_CONN_STAT_RESP'):
-                                conn_stat = cbt.data
-
-                        logCBT = self.CFxHandle.createCBT(initiator='Base'
-                                                          'TopologyManager',
-                                                          recipient='Logger',
-                                                          action='warning',
-                                                          data="Receive"
-                                                          " connection response")
-                        self.CFxHandle.submitCBT(logCBT)
-
-                        if self.check_collision(msg_type, msg["uid"], conn_stat):
-                            return
-                        fpr_len = len(self.ipop_state["_fpr"])
-                        fpr = msg["data"][:fpr_len]
-                        cas = msg["data"][fpr_len + 1:]
-                        self.create_connection(msg["uid"], fpr, 1,
-                                               self.CMConfig["sec"], cas, ip4)
-
     # Check if the given cbt is a request sent by the current module
     # If yes, returns the source CBT for which the request has been
     # created, else return None

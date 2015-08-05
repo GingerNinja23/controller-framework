@@ -55,7 +55,7 @@ class Monitor(ControllerModule):
 
             elif(cbt.action == 'QUERY_PEER_STATE'):
 
-                # Respond to a CM requesting state of a particular peer
+                # Respond to a CM, requesting state of a particular peer
 
                 peer_uid = cbt.data
                 cbt.action = 'QUERY_PEER_STATE_RESP'
