@@ -37,8 +37,6 @@ CONFIG = {
         "icc" : False, # Inter-Controller Connection
         "icc_port" : 30000,
         "trim_enabled": False,
-        "multihop": False,
-        "multihop_cl": 100, #Multihop connection count limit
         "multihop_ihc": 3, #Multihop initial hop count
         "multihop_hl": 10, #Multihop maximum hop count limit
         "multihop_tl": 1,  # Multihop time limit (second)
@@ -67,6 +65,8 @@ CONFIG = {
         "link_trimmer_wait_time": 30,
         "on-demand_connection" : False,
         "on-demand_inactive_timeout" : 600,
+        "multihop": False,
+        "multihop_cl": 100, #Multihop connection count limit
         "sec": True,
         "timer_interval": 15,
         "joinEnabled": True

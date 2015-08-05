@@ -1,4 +1,5 @@
 import time
+import ipoplib
 from ControllerModule import ControllerModule
 
 
@@ -10,10 +11,12 @@ class Monitor(ControllerModule):
         self.CMConfig = paramDict
         self.pendingCBT = {}
         self.CBTMappings = {}
+
+        self.peerlist = set()
         self.peers = {}
-        self.idle_peers = {}
         self.peers_ip4 = {}
         self.peers_ip6 = {}
+        self.far_peers = {}
         self.conn_stat = {}
         self.ipop_state = None
 
@@ -33,7 +36,7 @@ class Monitor(ControllerModule):
 
         if(not self.checkMapping(cbt)):
 
-            if(cbt.action == 'STORE_PEER_STATE'):
+            if(cbt.action == 'PEER_STATE'):
 
                 # Storing peer state requires ipop_state, which
                 # is requested by sending a CBT to Watchdog
@@ -134,7 +137,7 @@ class Monitor(ControllerModule):
                 self.CFxHandle.submitCBT(logCBT)
 
         # Case when one of the requested service CBT comes back
-        elif(self.checkMapping(cbt)):
+        else:
 
             # Get the source CBT of this response CBT
             sourceCBT_uid = self.checkMapping(cbt)
@@ -158,43 +161,20 @@ class Monitor(ControllerModule):
                     msg_type = msg.get("type", None)
 
                     if msg_type == "peer_state":
+                        uid = msg["uid"]
+                        if msg["status"] == "online": 
+                            self.peers_ip4[msg["ip4"]] = msg
+                            self.peers_ip6[msg["ip6"]] = msg
+                        else:
+                            if uid in self.peers and\
+                              self.peers[uid]["status"]=="online":
+                                del self.peers_ip4[self.peers[uid]["ip4"]]
+                                del self.peers_ip6[self.peers[uid]["ip6"]]
+                        self.peers[uid] = msg
+                        self.trigger_conn_request(msg)
                         if msg["status"] == "offline" or "stats" not in msg:
                             self.peers[msg["uid"]] = msg
                             self.trigger_conn_request(msg)
-                            return
-                        stats = msg["stats"]
-                        total_byte = 0
-                        for stat in stats:
-                            total_byte += stat["sent_total_bytes"]
-                            total_byte += stat["recv_total_bytes"]
-                        msg["total_byte"] = total_byte
-                        logCBT = self.CFxHandle.createCBT(initiator='Monitor',
-                                                          recipient='Logger',
-                                                          action='debug',
-                                                          data="self.peers:{0}"
-                                                          .format(self.peers))
-                        self.CFxHandle.submitCBT(logCBT)
-                        if not msg["uid"] in self.peers:
-                            msg["last_active"] = time.time()
-                        elif not "total_byte" in self.peers[msg["uid"]]:
-                            msg["last_active"] = time.time()
-                        else:
-                            if msg["total_byte"] > \
-                                         self.peers[msg["uid"]]["total_byte"]:
-                                msg["last_active"] = time.time()
-                            else:
-                                msg["last_active"] = \
-                                        self.peers[msg["uid"]]["last_active"]
-                        self.peers[msg["uid"]] = msg
-
-        else:
-            logCBT = self.CFxHandle.createCBT(initiator='Monitor',
-                                              recipient='Logger',
-                                              action='error',
-                                              data="Monitor: CBT already"
-                                              " exists in pendingCBT "
-                                              "dictionary")
-            self.CFxHandle.submitCBT(logCBT)
 
     def timer_method(self):
         pass

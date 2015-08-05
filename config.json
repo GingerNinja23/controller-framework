@@ -6,7 +6,7 @@
         "xmpp_host": "jabber.ru",
         "stat_report": true,
         "tincan_logging": 0,
-        "vpn_type": "GroupVPN"
+        "vpn_type": "SocialVPN"
     },
     "TincanListener" : {
         "socket_read_wait_time": 15,

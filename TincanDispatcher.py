@@ -91,7 +91,7 @@ class TincanDispatcher(ControllerModule):
 
                 CBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
                                                recipient='Monitor',
-                                               action='STORE_PEER_STATE',
+                                               action='PEER_STATE',
                                                data=msg)
                 self.CFxHandle.submitCBT(CBT)
 
@@ -117,7 +117,7 @@ class TincanDispatcher(ControllerModule):
         # |     42       | Payload (Ethernet frame)                     |
         # |-------------------------------------------------------------|
 
-        # Pass for basic all-to-all GVPN
+        # Pass for now
         elif data[1] == self.tincan_packet:
             pass
 

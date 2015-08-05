@@ -23,7 +23,7 @@ class BaseTopologyManager(ControllerModule):
         # In case of a fresh CBT, request the required services
         # from the other modules, by issuing CBTs. If no services
         # from other modules required, process the CBT here only
-        if((cbt not in self.pendingCBT) and not self.checkMapping(cbt)):
+        if(not self.checkMapping(cbt)):
             if(cbt.action == "TINCAN_MSG"):
                 msg = cbt.data
                 msg_type = msg.get("type", None)
@@ -41,12 +41,17 @@ class BaseTopologyManager(ControllerModule):
                     self.CFxHandle.submitCBT(stateCBT)
                     self.CBTMappings[cbt.uid] = [stateCBT.uid]
 
+                    cbtdata = {
+                        'uid': msg['uid'],
+                        'ip4': ipop_state["_ip4"]
+                    }
+
                     mapCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
                                                       'Manager',
                                                       recipient='Address'
                                                       'Mapper',
                                                       action='RESOLVE',
-                                                      data=msg['uid'])
+                                                      data=cbtdata)
                     self.CFxHandle.submitCBT(mapCBT)
                     self.CBTMappings[cbt.uid].append(mapCBT.uid)
 
@@ -54,33 +59,18 @@ class BaseTopologyManager(ControllerModule):
                                                              'TopologyManager',
                                                              recipient='Monitor',
                                                              action='QUERY_'
-                                                             'CONN_STAT',
-                                                             data=msg['uid'])
+                                                             'PEER_LIST',
+                                                             data='')
                     self.CFxHandle.submitCBT(conn_stat_CBT)
                     self.CBTMappings[cbt.uid].append(conn_stat_CBT.uid)
                     self.pendingCBT[cbt.uid] = cbt
 
-                # Pass for all to all GVPN
+                # Pass for now
                 elif msg_type == "send_msg":
                     pass
 
-            elif(cbt.action == "LINK_TRIMMER"):
-                stateCBT = self.CFxHandle.createCBT(initiator='Base'
-                                                    'TopologyManager',
-                                                    recipient='Watchdog',
-                                                    action='QUERY_IPOP_STATE',
-                                                    data="")
-                self.CFxHandle.submitCBT(stateCBT)
-
-                peersCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
-                                                    'Manager',
-                                                    recipient='Monitor',
-                                                    action='QUERY_PEER_LIST',
-                                                    data='')
-                self.CFxHandle.submitCBT(peersCBT)
-
-                self.pendingCBT[cbt.uid] = cbt
-                self.CBTMappings[cbt.uid] = [stateCBT.uid, peersCBT.uid]
+            elif(cbt.action == "QUERY_PEER_LIST_RESP"):
+                self.__link_trimmer(cbt.data)
 
             else:
                 logCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
@@ -93,7 +83,7 @@ class BaseTopologyManager(ControllerModule):
                 self.CFxHandle.submitCBT(logCBT)
 
         # Case when one of the requested service CBT comes back
-        elif((cbt not in self.pendingCBT) and self.checkMapping(cbt)):
+        else:
             # Get the source CBT of this request
             sourceCBT_uid = self.checkMapping(cbt)
             self.pendingCBT[cbt.uid] = cbt
@@ -103,7 +93,7 @@ class BaseTopologyManager(ControllerModule):
                 if(self.pendingCBT[sourceCBT_uid].action == 'TINCAN_MSG'):
                     msg = self.pendingCBT[sourceCBT_uid].data
                     msg_type = msg.get("type", None)
-                    if msg_type == "con_req":
+                    if msg_type == "con_req" or msg_type == "conn_resp":
                         for key in self.CBTMappings[sourceCBT_uid]:
                             if(self.pendingCBT[key].action ==
                                     'QUERY_IPOP_STATE_RESP'):
@@ -112,16 +102,32 @@ class BaseTopologyManager(ControllerModule):
                                     'RESOLVE_RESP'):
                                 ip4 = self.pendingCBT[key].data
                             elif(self.pendingCBT[key].action ==
-                                    'QUERY_CONN_STAT_RESP'):
-                                conn_stat = cbt.data
+                                    'QUERY_PEER_LIST_RESP'):
+                                peer_list = cbt.data
 
                         logCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
                                                           'Manager',
                                                           recipient='Logger',
                                                           action='info',
                                                           data="Received"
-                                                          " connection request")
+                                                          " connection request/"
+                                                          "response")
                         self.CFxHandle.submitCBT(logCBT)
+
+                        if self.CMConfig["multihop"]:
+                            conn_cnt = 0
+                            for k, v in self.peer_list.iteritems():
+                                if "fpr" in v and v["status"] == "online":
+                                    conn_cnt += 1
+                            if conn_cnt >= self.CMConfig["multihop_cl"]:
+                                continue
+                        if self.check_collision(msg_type, msg["uid"]): continue
+                        fpr_len = len(self.ipop_state["_fpr"])
+                        fpr = msg["data"][:fpr_len]
+                        cas = msg["data"][fpr_len + 1:]
+                        ip4 = gen_ip4(msg["uid"],self.ip_map,self.ipop_state["_ip4"])
+                        self.create_connection(msg["uid"], fpr, 1,\
+                                               CONFIG["sec"], cas, ip4)
 
                         if self.CMConfig["on-demand_connection"]:
                             idle_peer_CBT = self.CFxHandle.createCBT(initiator='BaseTopology'
@@ -169,23 +175,6 @@ class BaseTopologyManager(ControllerModule):
                         cas = msg["data"][fpr_len + 1:]
                         self.create_connection(msg["uid"], fpr, 1,
                                                self.CMConfig["sec"], cas, ip4)
-
-                elif(self.pendingCBT[sourceCBT_uid].action == 'LINK_TRIMMER'):
-                    for key in self.CBTMappings[sourceCBT_uid]:
-                        if(self.pendingCBT[key].action == 'QUERY_PEER_LIST_RESP'):
-                            peer_list = self.pendingCBT[key].data
-                        elif(self.pendingCBT[key].action == 'QUERY_IPOP_STATE_RESP'):
-                            ipop_state = self.pendingCBT[key].data
-                    self.__link_trimmer(peer_list, ipop_state)
-
-        else:
-            logCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',
-                                              recipient='Logger',
-                                              action='error',
-                                              data="BaseTopologyManager: CBT"
-                                              " already exists in "
-                                              "pendingCBT dictionary")
-            self.CFxHandle.submitCBT(logCBT)
 
     # Check if the given cbt is a request sent by the current module
     # If yes, returns the source CBT for which the request has been
@@ -253,25 +242,11 @@ class BaseTopologyManager(ControllerModule):
         else:
             return True
 
-    def __link_trimmer(self, peer_list, ipop_state):
+    def __link_trimmer(self, peer_list):
         for k, v in peer_list.iteritems():
             # Trim TinCan link if the peer is offline
             if "fpr" in v and v["status"] == "offline":
                 if v["last_time"] > self.CMConfig["link_trimmer_wait_time"]:
-
-                    cbtdata = {
-                        "method": "send_msg",
-                        "overlay_id": 1,
-                        "uid": k,
-                        "data": "destroy" + ipop_state["_uid"]
-                    }
-                    TincanCBT = self.CFxHandle.createCBT(initiator='Base'
-                                                         'TopologyManager',
-                                                         recipient='TincanSender',
-                                                         action='DO_SEND_MSG',
-                                                         data=cbtdata)
-                    self.CFxHandle.submitCBT(TincanCBT)
-
                     trimCBT = self.CFxHandle.createCBT(initiator='Base'
                                                        'TopologyManager',
                                                        recipient='LinkManager',
@@ -279,48 +254,26 @@ class BaseTopologyManager(ControllerModule):
                                                        data=k)
                     self.CFxHandle.submitCBT(trimCBT)
 
-            # Trim TinCan link if the On Demand Inactive Timeout occurs
-            if self.CMConfig["on-demand_connection"] \
-                    and v["status"] == "online":
-                if v["last_active"] + self.CMConfig["on-demand_inactive_timeout"] \
-                        < time.time():
-                    logCBT = self.CFxHandle.createCBT(initiator='Base'
-                                                      'TopologyManager',
-                                                      recipient='Logger',
-                                                      action='debug',
-                                                      data="Inactive,"
-                                                      " trimming node:{0}"
-                                                      .format(k) + cbt.initiator)
-                    self.CFxHandle.submitCBT(logCBT)
-
-                    cbtdata = {
-                        "method": "send_msg",
-                        "overlay_id": 1,
-                        "uid": k,
-                        "data": "destroy" + ipop_state["_uid"]
-                    }
-                    TincanCBT = self.CFxHandle.createCBT(initiator='Base'
-                                                         'TopologyManager',
-                                                         recipient='TincanSender',
-                                                         action='DO_SEND_MSG',
-                                                         data=cbtdata)
-                    self.CFxHandle.submitCBT(TincanCBT)
-
-                    trimCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
-                                                       'Manager',
-                                                       recipient='LinkManager',
-                                                       action='TRIM_LINK',
-                                                       data=k)
-                    self.CFxHandle.submitCBT(trimCBT)
+            if self.CMConfig["multihop"]: 
+                connection_count = 0 
+                for k, v in peer_list.iteritems():
+                    if "fpr" in v and v["status"] == "online":
+                        connection_count += 1
+                        if connection_count > self.CMConfig["multihop_cl"]:
+                            trimCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
+                                                               'Manager',
+                                                               recipient='LinkManager',
+                                                               action='TRIM_LINK',
+                                                               data=k)
+                            self.CFxHandle.submitCBT(trimCBT)
 
     def timer_method(self):
-        selfCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
-                                           'Manager',
-                                           recipient='BaseTopology'
-                                           'Manager',
-                                           action='LINK_TRIMMER',
-                                           data="")
-        self.CFxHandle.submitCBT(selfCBT)
+        peersCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
+                                            'Manager',
+                                            recipient='Monitor',
+                                            action='QUERY_PEER_LIST',
+                                            data='')
+        self.CFxHandle.submitCBT(peersCBT)
 
     def terminate(self):
         pass
