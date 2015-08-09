@@ -7,6 +7,7 @@ import signal
 import socket
 import ipoplib
 import argparse
+import binascii
 import threading
 import importlib
 from getpass import getpass
@@ -43,17 +44,17 @@ class CFX(object):
             self.uid = ipoplib.gen_uid(self.ip4) # SHA-1 Hash
         elif(self.vpn_type == 'SocialVPN'):
             self.uid = self.CONFIG['CFx']['local_uid']
-        self.ip6 = gen_ip6(self.uid)
+        self.ip6 = ipoplib.gen_ip6(self.uid)
 
         if socket.has_ipv6:
             self.sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
             self.sock_svr = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-            self.sock_svr.bind((self.CONFIG['CFx']["localhost6"],
+            self.sock_svr.bind((self.CONFIG['TincanSender']["localhost6"],
                                 self.CONFIG['CFx']["contr_port"]))
         else:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.sock_svr = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.sock_svr.bind((self.CONFIG['CFx']["localhost"],
+            self.sock_svr.bind((self.CONFIG['TincanSender']["localhost"],
                                 self.CONFIG['CFx']["contr_port"]))
         self.sock.bind(("", 0))
         self.sock_list = [self.sock, self.sock_svr]
@@ -83,16 +84,17 @@ class CFX(object):
         # Set logging level
         ipoplib.do_set_logging(self.sock, self.CONFIG["CFx"]["tincan_logging"])
 
-        # Callback endpoint to receive notifications
-        ipoplib.do_set_cb_endpoint(self.sock, self.sock.getsockname())
         
         if(self.vpn_type == "GroupVPN"):
             ipoplib.do_set_translation(self.sock, 0)
             ipoplib.do_set_switchmode(self.sock,
-                                      self.CONFIG["CFx"]["switchmode"])
+                                      self.CONFIG["TincanSender"]["switchmode"])
         elif(self.vpn_type == "SocialVPN"):
             ipoplib.do_set_translation(self.sock, 1)
         
+        # Callback endpoint to receive notifications
+        ipoplib.do_set_cb_endpoint(self.sock, self.sock.getsockname())
+
         # Configure the local node
         if not self.CONFIG["CFx"]["router_mode"]:
             ipoplib.do_set_local_ip(self.sock, self.uid, self.ip4,
@@ -100,7 +102,7 @@ class CFX(object):
                                     self.CONFIG["CFx"]["ip4_mask"],
                                     self.CONFIG["CFx"]["ip6_mask"],
                                     self.CONFIG["CFx"]["subnet_mask"],
-                                    self.CONFIG["CFx"]["switchmode"])
+                                    self.CONFIG["TincanSender"]["switchmode"])
 
         else:
             ipoplib.do_set_local_ip(self.sock, self.uid,
@@ -109,7 +111,7 @@ class CFX(object):
                                     self.CONFIG["CFx"]["router_ip4_mask"],
                                     self.CONFIG["CFx"]["router_ip6_mask"],
                                     self.CONFIG["CFx"]["subnet_mask"],
-                                    self.CONFIG["CFx"]["switchmode"])
+                                    self.CONFIG["TincanSender"]["switchmode"])
 
         # Register to the XMPP server
         ipoplib.do_register_service(self.sock, self.user,
@@ -121,13 +123,13 @@ class CFX(object):
         ipoplib.do_get_state(self.sock)
 
         # Ignore the network interfaces in the list
-        if "network_ignore_list" in CONFIG["CFx"]:
+        if "network_ignore_list" in self.CONFIG["CFx"]:
             ipoplib.make_call(self.sock, m="set_network_ignore_list",\
                              network_ignore_list=CONFIG["CFx"]["network_ignore_list"])
 
         print "CFx initialized. Loading Controller Modules\n"
 
-        self.loaded_modules = ['CFx']
+        self.loaded_modules = ['CFx'] # List of already loaded modules
 
         # Check for circular dependencies in config.json
         dependency_graph = {}
@@ -262,7 +264,7 @@ class CFX(object):
                 if(self.CONFIG.get(key, None)):
                     self.CONFIG[key].update(loaded_config[key])
 
-        need_save = ipoplib.setup_config(self.CONFIG)
+        need_save = self.setup_config(self.CONFIG)
         if need_save and args.config_file and args.update_config:
             with open(args.config_file, "w") as f:
                 json.dump(self.CONFIG, f, indent=4, sort_keys=True)
@@ -282,6 +284,16 @@ class CFX(object):
 
         if args.ip_config:
             ipoplib.load_peer_ip_config(args.ip_config)
+
+    def setup_config(self,config):
+        """Validate config and set default value here. Return ``True`` if config is
+        changed.
+        """
+        if not config['CFx']['local_uid']:
+            uid = binascii.b2a_hex(os.urandom(self.CONFIG['CFx']['uid_size'] / 2))
+            self.CONFIG['CFx']["local_uid"] = uid
+            return True # modified
+        return False
 
     def waitForShutdownEvent(self):
 

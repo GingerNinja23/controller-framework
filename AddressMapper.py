@@ -44,12 +44,20 @@ class AddressMapper(ControllerModule):
             # Modify the CBT with the response data and send it back
             cbt.action = 'RESOLVE_RESP'
 
-            # If mapping exists, return IP else return None
-            cbt.data = ipoplib.gen_ip4(cbt.data["uid"],self.ip_map,cbt.data["ip4"])
+            # Compute the IP4 address
+            cbt.data = ipoplib.gen_ip4(cbt.data,self.ip_map)
 
             # Swap inititator and recipient
             cbt.initiator, cbt.recipient = cbt.recipient, cbt.initiator
 
+            self.CFxHandle.submitCBT(cbt)
+
+        elif (cbt.action == 'QUERY_IP_MAP'):
+
+            cbt.action = 'QUERY_IP_MAP_RESP'
+
+            cbt.data = self.ip_map
+            cbt.initiator, cbt.recipient = cbt.recipient, cbt. initiator
             self.CFxHandle.submitCBT(cbt)
 
         elif(cbt.action == 'REVERSE_RESOLVE'):

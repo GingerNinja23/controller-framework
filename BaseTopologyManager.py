@@ -1,3 +1,4 @@
+import ipoplib
 from ControllerModule import ControllerModule
 
 
@@ -20,6 +21,7 @@ class BaseTopologyManager(ControllerModule):
         self.CFxHandle.submitCBT(logCBT)
 
     def processCBT(self, cbt):
+
         # In case of a fresh CBT, request the required services
         # from the other modules, by issuing CBTs. If no services
         # from other modules required, process the CBT here only
@@ -33,36 +35,52 @@ class BaseTopologyManager(ControllerModule):
                     pass
 
                 elif msg_type == "con_req" or msg_type == "con_resp":
-                    stateCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
-                                                        'Manager',
+                    stateCBT = self.CFxHandle.createCBT(initiator='Base'
+                                                        'TopologyManager',
                                                         recipient='Watchdog',
-                                                        action='QUERY_IPOP_STATE',
+                                                        action='QUERY_IPOP'
+                                                        '_STATE',
                                                         data="")
                     self.CFxHandle.submitCBT(stateCBT)
                     self.CBTMappings[cbt.uid] = [stateCBT.uid]
-
-                    cbtdata = {
-                        'uid': msg['uid'],
-                        'ip4': ipop_state["_ip4"]
-                    }
 
                     mapCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
                                                       'Manager',
                                                       recipient='Address'
                                                       'Mapper',
                                                       action='RESOLVE',
-                                                      data=cbtdata)
+                                                      data=msg['uid'])
                     self.CFxHandle.submitCBT(mapCBT)
                     self.CBTMappings[cbt.uid].append(mapCBT.uid)
+
+                    ip_mapCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
+                                                         'Manager',
+                                                         recipient='Address'
+                                                         'Mapper',
+                                                         action='QUERY_IP_MAP',
+                                                         data="")
+                    self.CFxHandle.submitCBT(ip_mapCBT)
+                    self.CBTMappings[cbt.uid].append(ip_mapCBT.uid)
 
                     conn_stat_CBT = self.CFxHandle.createCBT(initiator='Base'
                                                              'TopologyManager',
                                                              recipient='Monitor',
                                                              action='QUERY_'
-                                                             'PEER_LIST',
-                                                             data='')
+                                                             'CONN_STAT',
+                                                             data=msg['uid'])
                     self.CFxHandle.submitCBT(conn_stat_CBT)
                     self.CBTMappings[cbt.uid].append(conn_stat_CBT.uid)
+
+                    peer_list_CBT = self.CFxHandle.createCBT(initiator='Base'
+                                                             'TopologyManager',
+                                                             recipient='Monitor',
+                                                             action='QUERY_'
+                                                             'PEER_LIST',
+                                                             data='')
+                    self.CFxHandle.submitCBT(peer_list_CBT)
+                    self.CBTMappings[cbt.uid].append(peer_list_CBT.uid)
+
+                    # Add CBT to pendingCBT dictionary
                     self.pendingCBT[cbt.uid] = cbt
 
                 # Pass for now
@@ -70,6 +88,8 @@ class BaseTopologyManager(ControllerModule):
                     pass
 
             elif(cbt.action == "QUERY_PEER_LIST_RESP"):
+
+                # cbt.data is a dict of peers
                 self.__link_trimmer(cbt.data)
 
             else:
@@ -83,6 +103,7 @@ class BaseTopologyManager(ControllerModule):
                 self.CFxHandle.submitCBT(logCBT)
 
         # Case when one of the requested service CBT comes back
+
         else:
             # Get the source CBT of this request
             sourceCBT_uid = self.checkMapping(cbt)
@@ -93,7 +114,7 @@ class BaseTopologyManager(ControllerModule):
                 if(self.pendingCBT[sourceCBT_uid].action == 'TINCAN_MSG'):
                     msg = self.pendingCBT[sourceCBT_uid].data
                     msg_type = msg.get("type", None)
-                    if msg_type == "con_req" or msg_type == "conn_resp":
+                    if msg_type == "con_req" or msg_type == "con_resp":
                         for key in self.CBTMappings[sourceCBT_uid]:
                             if(self.pendingCBT[key].action ==
                                     'QUERY_IPOP_STATE_RESP'):
@@ -102,8 +123,14 @@ class BaseTopologyManager(ControllerModule):
                                     'RESOLVE_RESP'):
                                 ip4 = self.pendingCBT[key].data
                             elif(self.pendingCBT[key].action ==
+                                    'QUERY_CONN_STAT_RESP'):
+                                conn_stat = self.pendingCBT[key].data
+                            elif(self.pendingCBT[key].action ==
                                     'QUERY_PEER_LIST_RESP'):
-                                peer_list = cbt.data
+                                peer_list = self.pendingCBT[key].data
+                            elif(self.pendingCBT[key].action ==
+                                    'QUERY_IP_MAP_RESP'):
+                                ip_map = self.pendingCBT[key].data
 
                         logCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
                                                           'Manager',
@@ -116,18 +143,18 @@ class BaseTopologyManager(ControllerModule):
 
                         if self.CMConfig["multihop"]:
                             conn_cnt = 0
-                            for k, v in self.peer_list.iteritems():
+                            for k, v in peer_list.iteritems():
                                 if "fpr" in v and v["status"] == "online":
                                     conn_cnt += 1
                             if conn_cnt >= self.CMConfig["multihop_cl"]:
-                                continue
-                        if self.check_collision(msg_type, msg["uid"]): continue
+                                return
+                        if self.check_collision(msg_type, msg["uid"],conn_stat): return
                         fpr_len = len(self.ipop_state["_fpr"])
                         fpr = msg["data"][:fpr_len]
                         cas = msg["data"][fpr_len + 1:]
-                        ip4 = gen_ip4(msg["uid"],self.ip_map,self.ipop_state["_ip4"])
+                        ip4 = ipoplib.gen_ip4(msg["uid"],ip_map,self.ipop_state["_ip4"])
                         self.create_connection(msg["uid"], fpr, 1,\
-                                               CONFIG["sec"], cas, ip4)
+                                               self.CMConfig["sec"], cas, ip4)
 
     # Check if the given cbt is a request sent by the current module
     # If yes, returns the source CBT for which the request has been

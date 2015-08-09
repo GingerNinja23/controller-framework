@@ -147,7 +147,7 @@ class Monitor(ControllerModule):
             # process CBT here. Else wait for other CBTs to arrive
             if(self.allServicesCompleted(sourceCBT_uid)):
                 if(self.pendingCBT[sourceCBT_uid].action ==
-                        'STORE_PEER_STATE'):
+                        'PEER_STATE'):
 
                     # Retrieve values from response CBTs
                     for key in self.CBTMappings[sourceCBT_uid]:

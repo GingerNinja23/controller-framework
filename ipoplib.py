@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import argparse
-import binascii
 import datetime
 import getpass
 import hashlib
@@ -23,9 +22,6 @@ from threading import Timer
 
 CONFIG = {
     "CFx": {
-
-        "ip6_prefix": "fd50:0dbc:41f2:4a3c",
-
         "ip4_mask": 24,
         "ip6_mask": 64,
         "subnet_mask": 32,
@@ -82,6 +78,7 @@ CONFIG = {
         "stun": ["stun.l.google.com:19302", "stun1.l.google.com:19302",
              "stun2.l.google.com:19302", "stun3.l.google.com:19302",
              "stun4.l.google.com:19302"],
+        "ip6_prefix": "fd50:0dbc:41f2:4a3c",
         "turn": [],
         "switchmode" : 0,
         "localhost": "127.0.0.1",
@@ -279,16 +276,6 @@ def do_set_switchmode(sock, switchmode):
 
 def do_set_trimpolicy(sock, trim_enabled):
     return make_call(sock, m="set_trimpolicy", trim_enabled=trim_enabled)
-
-def setup_config(config):
-    """Validate config and set default value here. Return ``True`` if config is
-    changed.
-    """
-    if not config['CFx']['local_uid']:
-        uid = binascii.b2a_hex(os.urandom(CONFIG['CFx']['uid_size'] / 2))
-        config["local_uid"] = uid
-        return True # modified
-    return False
 
 def load_peer_ip_config(ip_config):
     with open(ip_config) as f:
