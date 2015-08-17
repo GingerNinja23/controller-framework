@@ -41,7 +41,7 @@ class CFX(object):
         self.host = self.CONFIG['CFx']["xmpp_host"]
         self.ip4 = self.CONFIG['AddressMapper']["ip4"]
         if(self.vpn_type == 'GroupVPN'):
-            self.uid = ipoplib.gen_uid(self.ip4) # SHA-1 Hash
+            self.uid = ipoplib.gen_uid(self.ip4)  # SHA-1 Hash
         elif(self.vpn_type == 'SocialVPN'):
             self.uid = self.CONFIG['CFx']['local_uid']
         self.ip6 = ipoplib.gen_ip6(self.uid)
@@ -84,14 +84,13 @@ class CFX(object):
         # Set logging level
         ipoplib.do_set_logging(self.sock, self.CONFIG["CFx"]["tincan_logging"])
 
-        
         if(self.vpn_type == "GroupVPN"):
             ipoplib.do_set_translation(self.sock, 0)
             ipoplib.do_set_switchmode(self.sock,
                                       self.CONFIG["TincanSender"]["switchmode"])
         elif(self.vpn_type == "SocialVPN"):
             ipoplib.do_set_translation(self.sock, 1)
-        
+
         # Callback endpoint to receive notifications
         ipoplib.do_set_cb_endpoint(self.sock, self.sock.getsockname())
 
@@ -124,12 +123,12 @@ class CFX(object):
 
         # Ignore the network interfaces in the list
         if "network_ignore_list" in self.CONFIG["CFx"]:
-            ipoplib.make_call(self.sock, m="set_network_ignore_list",\
-                             network_ignore_list=CONFIG["CFx"]["network_ignore_list"])
+            ipoplib.make_call(self.sock, m="set_network_ignore_list",
+                              network_ignore_list=CONFIG["CFx"]["network_ignore_list"])
 
         print "CFx initialized. Loading Controller Modules\n"
 
-        self.loaded_modules = ['CFx'] # List of already loaded modules
+        self.loaded_modules = ['CFx']  # List of already loaded modules
 
         # Check for circular dependencies in config.json
         dependency_graph = {}
@@ -285,14 +284,14 @@ class CFX(object):
         if args.ip_config:
             ipoplib.load_peer_ip_config(args.ip_config)
 
-    def setup_config(self,config):
+    def setup_config(self, config):
         """Validate config and set default value here. Return ``True`` if config is
         changed.
         """
         if not config['CFx']['local_uid']:
             uid = binascii.b2a_hex(os.urandom(self.CONFIG['CFx']['uid_size'] / 2))
             self.CONFIG['CFx']["local_uid"] = uid
-            return True # modified
+            return True  # modified
         return False
 
     def waitForShutdownEvent(self):
