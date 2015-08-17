@@ -7,7 +7,6 @@ class LinkManager(ControllerModule):
 
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
-        self.pendingCBT = {}
 
     def initialize(self):
 
