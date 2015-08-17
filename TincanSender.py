@@ -16,7 +16,6 @@ class TincanSender(ControllerModule):
         self.CMConfig = paramDict
         self.sock = sock_list[0]
         self.sock_svr = sock_list[1]
-        self.pendingCBT = {}
 
     def initialize(self):
 

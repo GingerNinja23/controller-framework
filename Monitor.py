@@ -8,8 +8,6 @@ class Monitor(ControllerModule):
 
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
-        self.pendingCBT = {}
-        self.CBTMappings = {}
         self.peers = {}
         self.idle_peers = {}
         self.peers_ip4 = {}
@@ -198,26 +196,6 @@ class Monitor(ControllerModule):
 
     def timer_method(self):
         pass
-
-    def checkMapping(self, cbt):
-
-        # Check if the given cbt is a request sent by the current module
-        # If yes, return the source CBT for which the request has been
-        # created, else return None
-
-        for key in self.CBTMappings:
-            if(cbt.uid in self.CBTMappings[key]):
-                return key
-        return None
-
-    def allServicesCompleted(self, sourceCBT_uid):
-
-        # For a given sourceCBT's uid, check if all requests are serviced
-        requested_services = self.CBTMappings[sourceCBT_uid]
-        for service in requested_services:
-            if(service not in self.pendingCBT):
-                return False
-        return True
 
     def trigger_conn_request(self, peer):
         if "fpr" not in peer and peer["xmpp_time"] < \

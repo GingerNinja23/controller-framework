@@ -8,7 +8,6 @@ class Logger(ControllerModule):
 
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
-        self.pendingCBT = {}
 
     def initialize(self):
 

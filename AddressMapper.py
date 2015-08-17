@@ -8,7 +8,6 @@ class AddressMapper(ControllerModule):
 
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
-        self.pendingCBT = {}
         self.uid_ip_table = {}
 
     def initialize(self):
