@@ -8,8 +8,9 @@ class ControllerModule(object):
 
     __metaclass__ = ABCMeta
 
-    self.pendingCBT = {}
-    self.CBTMappings = {}
+    def __init__(self):
+        self.pendingCBT = {}
+        self.CBTMappings = {}
 
     @abstractmethod
     def initialize(self):

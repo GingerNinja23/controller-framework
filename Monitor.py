@@ -6,6 +6,7 @@ class Monitor(ControllerModule):
 
     def __init__(self, CFxHandle, paramDict):
 
+        super(Monitor,self).__init__()
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
         self.peers = {}
