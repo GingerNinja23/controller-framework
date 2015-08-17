@@ -8,8 +8,6 @@ class BaseTopologyManager(ControllerModule):
 
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
-        self.pendingCBT = {}
-        self.CBTMappings = {}
         self.ipop_state = None
 
     def initialize(self):
@@ -155,23 +153,6 @@ class BaseTopologyManager(ControllerModule):
                         ip4 = ipoplib.gen_ip4(msg["uid"],ip_map,self.ipop_state["_ip4"])
                         self.create_connection(msg["uid"], fpr, 1,\
                                                self.CMConfig["sec"], cas, ip4)
-
-    # Check if the given cbt is a request sent by the current module
-    # If yes, returns the source CBT for which the request has been
-    # created, else return None
-    def checkMapping(self, cbt):
-        for key in self.CBTMappings:
-            if(cbt.uid in self.CBTMappings[key]):
-                return key
-        return None
-
-    # For a given sourceCBT's uid, check if all requests are serviced
-    def allServicesCompleted(self, sourceCBT_uid):
-        requested_services = self.CBTMappings[sourceCBT_uid]
-        for service in requested_services:
-            if(service not in self.pendingCBT):
-                return False
-        return True
 
     def create_connection(self, uid, data, nid, sec, cas, ip4):
 

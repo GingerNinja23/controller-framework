@@ -14,6 +14,7 @@ class CFxHandle(object):
         self.__CFxObject = CFxObject  # CFx object reference
         self.joinEnabled = False
         self.timer_thread = None
+        self.terminateFlag = False
 
     def __getCBT(self):
 
@@ -83,6 +84,7 @@ class CFxHandle(object):
 
             # Break the loop if special terminate CBT received
             if(cbt.action == 'TERMINATE'):
+                self.terminateFlag = True
                 module_name = self.CMInstance.__class__.__name__
                 logging.info(module_name+" exiting")
                 self.CMInstance.terminate()
@@ -97,5 +99,7 @@ class CFxHandle(object):
         event = threading.Event()
 
         while(True):
+            if(self.terminateFlag):
+                break
             event.wait(interval)
             self.CMInstance.timer_method()
