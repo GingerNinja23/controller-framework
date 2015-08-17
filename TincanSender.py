@@ -85,7 +85,7 @@ class TincanSender(ControllerModule):
                 turn = random.choice(self.CMConfig["turn"])
             else:
                 turn = {"server": "", "user": "", "pass": ""}
-        return make_call(sock, m="create_link", uid=uid, fpr=fpr,
+        return self.make_call(sock, m="create_link", uid=uid, fpr=fpr,
                          overlay_id=overlay_id, stun=stun, turn=turn["server"],
                          turn_user=turn["user"],
                          turn_pass=turn["pass"], sec=sec, cas=cas)
