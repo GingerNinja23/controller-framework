@@ -5,6 +5,7 @@ class Watchdog(ControllerModule):
 
     def __init__(self, CFxHandle, paramDict):
 
+        super(Watchdog, self).__init__()
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
         self.ipop_state = None
@@ -40,7 +41,7 @@ class Watchdog(ControllerModule):
             logCBT = self.CFxHandle.createCBT(initiator='Monitor',
                                               recipient='Logger',
                                               action='error',
-                                              data="Watchdog: Unrecognized CBT "
+                                              data="Watchdog: Unrecognized CBT"
                                               "from: " + cbt.initiator)
             self.CFxHandle.submitCBT(logCBT)
 

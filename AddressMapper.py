@@ -6,6 +6,7 @@ class AddressMapper(ControllerModule):
 
     def __init__(self, CFxHandle, paramDict):
 
+        super(AddressMapper, self).__init__()
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
         self.ip_map = dict(ipoplib.IP_MAP)
@@ -44,7 +45,7 @@ class AddressMapper(ControllerModule):
             cbt.action = 'RESOLVE_RESP'
 
             # Compute the IP4 address
-            cbt.data = ipoplib.gen_ip4(cbt.data,self.ip_map)
+            cbt.data = ipoplib.gen_ip4(cbt.data, self.ip_map)
 
             # Swap inititator and recipient
             cbt.initiator, cbt.recipient = cbt.recipient, cbt.initiator
