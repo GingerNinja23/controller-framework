@@ -5,6 +5,7 @@ class Watchdog(ControllerModule):
 
     def __init__(self, CFxHandle, paramDict):
 
+        super(Watchdog,self).__init__()
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
         self.ipop_state = None
