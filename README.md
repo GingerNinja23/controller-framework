@@ -1,25 +1,25 @@
-# Running GroupVPN on the Controller Framework
+# Running SocialVPN on the Controller Framework
 
 ### Usage Instructions (For Ubuntu)
 
 #### Download and configure
 
-* Download and extract GroupVPN
+* Download and extract SocialVPN
 ```
-wget -O controller-framework-gvpn_beta.tar.gz https://goo.gl/BjKMGg
-tar xvzf controller-framework-gvpn_beta.tar.gz
-cd controller-framework-gvpn_beta
+wget -O controller-framework-svpn_beta-v0.2.tar.gz https://goo.gl/CwBJe0
+tar xvzf controller-framework-svpn_beta-v0.2.tar.gz
+cd controller-framework-svpn_beta-v0.2
 ```
-* Change config.json according to the requirement. Ensure that the IP addresses are different for all the nodes.
+* Add the xmpp_username, xmpp_password, xmpp_host parameters to the config.json file.
 
 
-#### Run GroupVPN
+#### Run SocialVPN
 
 * Run IPOP-Tincan 
 ```
 sudo sh -c './ipop-tincan-x86_64 1> out.log 2> err.log &'
 ```
-* Start GroupVPN controller
+* Start SocialVPN controller
 ```
 python CFx.py -c config.json &> log.txt &
 ```
@@ -28,7 +28,7 @@ python CFx.py -c config.json &> log.txt &
 echo -e '\x02\x01{"m":"get_state"}' | netcat -q 1 -u 127.0.0.1 5800
 ```
 
-#### Kill GroupVPN
+#### Kill SocialVPN
 Find out the process IDs of IPOP Tincan and IPOP Controller using the following command
 ```
 netstat -ntulp
