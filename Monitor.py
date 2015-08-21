@@ -7,7 +7,7 @@ class Monitor(ControllerModule):
 
     def __init__(self, CFxHandle, paramDict):
 
-        super(Monitor,self).__init__()
+        super(Monitor, self).__init__()
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
 
@@ -161,12 +161,12 @@ class Monitor(ControllerModule):
 
                     if msg_type == "peer_state":
                         uid = msg["uid"]
-                        if msg["status"] == "online": 
+                        if msg["status"] == "online":
                             self.peers_ip4[msg["ip4"]] = msg
                             self.peers_ip6[msg["ip6"]] = msg
                         else:
                             if uid in self.peers and\
-                              self.peers[uid]["status"]=="online":
+                              self.peers[uid]["status"] == "online":
                                 del self.peers_ip4[self.peers[uid]["ip4"]]
                                 del self.peers_ip6[self.peers[uid]["ip6"]]
                         self.peers[uid] = msg

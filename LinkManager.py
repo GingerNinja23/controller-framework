@@ -5,6 +5,7 @@ class LinkManager(ControllerModule):
 
     def __init__(self, CFxHandle, paramDict):
 
+        super(LinkManager, self).__init__()
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
         self.pendingCBT = {}

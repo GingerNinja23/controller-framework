@@ -7,6 +7,7 @@ class TincanListener(ControllerModule):
 
     def __init__(self, sock_list, CFxHandle, paramDict):
 
+        super(TincanListener, self).__init__()
         self.CFxHandle = CFxHandle
         self.sock = sock_list[0]
         self.sock_svr = sock_list[1]

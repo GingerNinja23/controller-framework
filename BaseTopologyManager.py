@@ -6,7 +6,7 @@ class BaseTopologyManager(ControllerModule):
 
     def __init__(self, CFxHandle, paramDict):
 
-        super(BaseTopologyManager,self).__init__()        
+        super(BaseTopologyManager, self).__init__()
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
         self.ipop_state = None
@@ -52,8 +52,8 @@ class BaseTopologyManager(ControllerModule):
                     self.CFxHandle.submitCBT(mapCBT)
                     self.CBTMappings[cbt.uid].append(mapCBT.uid)
 
-                    ip_mapCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
-                                                         'Manager',
+                    ip_mapCBT = self.CFxHandle.createCBT(initiator='Base'
+                                                         'TopologyManager',
                                                          recipient='Address'
                                                          'Mapper',
                                                          action='QUERY_IP_MAP',
@@ -131,13 +131,13 @@ class BaseTopologyManager(ControllerModule):
                                     'QUERY_IP_MAP_RESP'):
                                 ip_map = self.pendingCBT[key].data
 
-                        logCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
-                                                          'Manager',
+                        logCBT = self.CFxHandle.createCBT(initiator='Base'
+                                                          'TopologyManager',
                                                           recipient='Logger',
                                                           action='info',
                                                           data="Received"
-                                                          " connection request/"
-                                                          "response")
+                                                          " connection request"
+                                                          "/response")
                         self.CFxHandle.submitCBT(logCBT)
 
                         if self.CMConfig["multihop"]:
@@ -147,18 +147,22 @@ class BaseTopologyManager(ControllerModule):
                                     conn_cnt += 1
                             if conn_cnt >= self.CMConfig["multihop_cl"]:
                                 return
-                        if self.check_collision(msg_type, msg["uid"],conn_stat): return
+                        if self.check_collision(msg_type, msg["uid"], conn_stat):
+                            return
                         fpr_len = len(self.ipop_state["_fpr"])
                         fpr = msg["data"][:fpr_len]
                         cas = msg["data"][fpr_len + 1:]
-                        ip4 = ipoplib.gen_ip4(msg["uid"],ip_map,self.ipop_state["_ip4"])
-                        self.create_connection(msg["uid"], fpr, 1,\
+                        ip4 = ipoplib.gen_ip4(msg["uid"],
+                                              ip_map,
+                                              self.ipop_state["_ip4"])
+                        self.create_connection(msg["uid"], fpr, 1,
                                                self.CMConfig["sec"], cas, ip4)
 
     def create_connection(self, uid, data, nid, sec, cas, ip4):
 
         conn_dict = {'uid': uid, 'fpr': data, 'nid': nid, 'sec': sec, 'cas': cas}
-        createLinkCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',
+        createLinkCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
+                                                 'Manager',
                                                  recipient='LinkManager',
                                                  action='CREATE_LINK',
                                                  data=conn_dict)
@@ -179,7 +183,8 @@ class BaseTopologyManager(ControllerModule):
         if msg_type == "con_req" and \
            conn_stat == "req_sent":
             if uid > self.ipop_state["_uid"]:
-                trimCBT = self.CFxHandle.createCBT(initiator='BaseTopologyManager',
+                trimCBT = self.CFxHandle.createCBT(initiator='Base'
+                                                   'TopologyManager',
                                                    recipient='LinkManager',
                                                    action='TRIM_LINK',
                                                    data=uid)
@@ -188,7 +193,8 @@ class BaseTopologyManager(ControllerModule):
                 conn_stat_pop_CBT = self.CFxHandle.createCBT(initiator='Base'
                                                              'TopologyManager',
                                                              recipient='Monitor',
-                                                             action='DELETE_CONN_STAT',
+                                                             action='DELETE_'
+                                                             'CONN_STAT',
                                                              data=uid)
                 self.CFxHandle.submitCBT(conn_stat_pop_CBT)
             return False
@@ -197,8 +203,10 @@ class BaseTopologyManager(ControllerModule):
                                                      'TopologyManager',
                                                      recipient='Monitor',
                                                      action='STORE_CONN_STAT',
-                                                     data={'uid': uid,
-                                                           'status': "resp_recv"})
+                                                     data={
+                                                          'uid': uid,
+                                                          'status': "resp_recv"
+                                                           })
             self.CFxHandle.submitCBT(conn_stat_CBT)
             return False
         else:
@@ -216,16 +224,19 @@ class BaseTopologyManager(ControllerModule):
                                                        data=k)
                     self.CFxHandle.submitCBT(trimCBT)
 
-            if self.CMConfig["multihop"]: 
-                connection_count = 0 
+            if self.CMConfig["multihop"]:
+                connection_count = 0
                 for k, v in peer_list.iteritems():
                     if "fpr" in v and v["status"] == "online":
                         connection_count += 1
                         if connection_count > self.CMConfig["multihop_cl"]:
-                            trimCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
+                            trimCBT = self.CFxHandle.createCBT(initiator='Base'
+                                                               'Topology'
                                                                'Manager',
-                                                               recipient='LinkManager',
-                                                               action='TRIM_LINK',
+                                                               recipient='Link'
+                                                               'Manager',
+                                                               action='TRIM_'
+                                                               'LINK',
                                                                data=k)
                             self.CFxHandle.submitCBT(trimCBT)
 
