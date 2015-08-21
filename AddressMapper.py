@@ -6,6 +6,7 @@ class AddressMapper(ControllerModule):
 
     def __init__(self, CFxHandle, paramDict):
 
+        super(AddressMapper,self).__init__()
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
         self.uid_ip_table = {}
