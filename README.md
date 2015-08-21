@@ -10,7 +10,7 @@ wget -O controller-framework-gvpn_beta-v0.3.tar.gz https://goo.gl/UBQJPy
 tar xvzf controller-framework-gvpn_beta-v0.3.tar.gz
 cd controller-framework-gvpn_beta-v0.3
 ```
-* Change config.json according to the requirement. Add xmpp_username, xmpp_password and xmpp_host to the config gile. Ensure that the IP addresses are different for all the nodes.
+* Change config.json according to the requirement. Add xmpp_username, xmpp_password and xmpp_host to the config file. Ensure that the IP addresses are different for all the nodes.
 
 
 #### Run GroupVPN
