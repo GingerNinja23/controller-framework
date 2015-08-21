@@ -29,6 +29,7 @@
         "dependencies": ["Logger"]
     },
     "BaseTopologyManager": {
+        "on-demand_connection": true,
         "timer_interval": 15,
         "joinEnabled": true,
         "dependencies": ["Logger"]

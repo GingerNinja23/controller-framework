@@ -87,7 +87,8 @@ class CFX(object):
         if(self.vpn_type == "GroupVPN"):
             ipoplib.do_set_translation(self.sock, 0)
             ipoplib.do_set_switchmode(self.sock,
-                                      self.CONFIG["TincanSender"]["switchmode"])
+                                      self.CONFIG["TincanSender"]
+                                      ["switchmode"])
         elif(self.vpn_type == "SocialVPN"):
             ipoplib.do_set_translation(self.sock, 1)
 
@@ -124,7 +125,8 @@ class CFX(object):
         # Ignore the network interfaces in the list
         if "network_ignore_list" in self.CONFIG["CFx"]:
             ipoplib.make_call(self.sock, m="set_network_ignore_list",
-                              network_ignore_list=CONFIG["CFx"]["network_ignore_list"])
+                              network_ignore_list=CONFIG["CFx"]
+                              ["network_ignore_list"])
 
         print "CFx initialized. Loading Controller Modules\n"
 
@@ -289,7 +291,8 @@ class CFX(object):
         changed.
         """
         if not config['CFx']['local_uid']:
-            uid = binascii.b2a_hex(os.urandom(self.CONFIG['CFx']['uid_size'] / 2))
+            uid = binascii.b2a_hex(os.urandom(self.CONFIG['CFx']
+                                              ['uid_size'] / 2))
             self.CONFIG['CFx']["local_uid"] = uid
             return True  # modified
         return False
