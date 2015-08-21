@@ -117,9 +117,12 @@ class TincanDispatcher(ControllerModule):
         # |     42       | Payload (Ethernet frame)                     |
         # |-------------------------------------------------------------|
 
-        # Pass for basic all-to-all GVPN
         elif data[1] == self.tincan_packet:
-            pass
+            CBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
+                                           recipient='BaseTopologyManager',
+                                           action='TINCAN_PACKET',
+                                           data=data)
+            self.CFxHandle.submitCBT(CBT)
 
         else:
 

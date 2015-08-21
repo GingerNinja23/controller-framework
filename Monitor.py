@@ -6,7 +6,7 @@ class Monitor(ControllerModule):
 
     def __init__(self, CFxHandle, paramDict):
 
-        super(Monitor,self).__init__()
+        super(Monitor, self).__init__()
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
         self.peers = {}
@@ -98,13 +98,12 @@ class Monitor(ControllerModule):
                                                       " from " + cbt.initiator)
                     self.CFxHandle.submitCBT(logCBT)
 
-            elif(cbt.action == 'QUERY_IDLE_PEER_STATE'):
+            elif(cbt.action == 'QUERY_IDLE_PEER_LIST'):
 
-                # Respond to a CM requesting idle peer state
-                idle_peer_uid = cbt.data
-                cbt.action = 'QUERY_IDLE_PEER_STATE_RESP'
+                # Respond to a CM requesting for idle peer list
+                cbt.action = 'QUERY_IDLE_PEER_LIST_RESP'
                 cbt.initiator, cbt.recipient = cbt.recipient, cbt.initiator
-                cbt.data = self.idle_peers.get(idle_peer_uid)
+                cbt.data = self.idle_peers
                 self.CFxHandle.submitCBT(cbt)
 
             elif(cbt.action == 'STORE_IDLE_PEER_STATE'):
