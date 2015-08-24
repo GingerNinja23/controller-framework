@@ -334,6 +334,7 @@ class CFX(object):
             self.submitCBT(terminateCBT)
 
         # Wait for the threads to process their current CBTs and exit
+        print "Waiting for threads to exit gracefully..."
         for handle in self.CFxHandleDict:
             if(self.CFxHandleDict[handle].joinEnabled):
                 self.CFxHandleDict[handle].CMThread.join()
