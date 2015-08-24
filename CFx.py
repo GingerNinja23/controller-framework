@@ -31,8 +31,9 @@ class CFX(object):
         self.parse_config()
         ipoplib.CONFIG = self.CONFIG
 
-        # CFxHandle is a dict containing the references to CFxHandles of all
-        # CMs with key as the module name and value as the CFxHandle reference
+        # CFxHandleDict is a dict containing the references to
+        # CFxHandles of all CMs with key as the module name and
+        # value as the CFxHandle reference
         self.CFxHandleDict = {}
 
         self.vpn_type = self.CONFIG['CFx']['vpn_type']
@@ -130,7 +131,7 @@ class CFX(object):
 
         print "CFx initialized. Loading Controller Modules\n"
 
-        self.loaded_modules = ['CFx']  # List of already loaded modules
+        self.loaded_modules = ['CFx']  # List of modules already loaded
 
         # Check for circular dependencies in config.json
         dependency_graph = {}
@@ -224,8 +225,6 @@ class CFX(object):
         return any(visit(v) for v in g)
 
     def __handler(self, signum=None, frame=None):
-
-        # This is a private method, and cannot be called by the CMs
 
         print 'Signal handler called with signal ' + str(signum)
 

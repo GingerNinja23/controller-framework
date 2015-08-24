@@ -10,7 +10,7 @@ class TincanDispatcher(ControllerModule):
 
     def __init__(self, CFxHandle, paramDict):
 
-        super(TincanDispatcher,self).__init__()
+        super(TincanDispatcher, self).__init__()
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
 
@@ -119,6 +119,9 @@ class TincanDispatcher(ControllerModule):
         # |-------------------------------------------------------------|
 
         elif data[1] == self.tincan_packet:
+
+            # Send the Tincan Packet to BaseTopologyManager
+
             CBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
                                            recipient='BaseTopologyManager',
                                            action='TINCAN_PACKET',

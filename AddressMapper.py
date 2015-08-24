@@ -6,17 +6,15 @@ class AddressMapper(ControllerModule):
 
     def __init__(self, CFxHandle, paramDict):
 
-        super(AddressMapper,self).__init__()
+        super(AddressMapper, self).__init__()
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
         self.uid_ip_table = {}
 
     def initialize(self):
 
-        # For GroupVPN
         # Populating the uid_ip_table with all the IPv4 addresses
         # and the corresponding UIDs in the /16 subnet
-
         parts = self.CMConfig["ip4"].split(".")
         ip_prefix = parts[0] + "." + parts[1] + "."
         for i in range(0, 255):
