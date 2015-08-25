@@ -12,7 +12,7 @@ class TincanSender(ControllerModule):
 
     def __init__(self, sock_list, CFxHandle, paramDict):
 
-        super(TincanSender,self).__init__()
+        super(TincanSender, self).__init__()
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
         self.sock = sock_list[0]

@@ -6,7 +6,7 @@ class Logger(ControllerModule):
 
     def __init__(self, CFxHandle, paramDict):
 
-        super(Logger,self).__init__()
+        super(Logger, self).__init__()
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
 

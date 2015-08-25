@@ -9,7 +9,7 @@ class BaseTopologyManager(ControllerModule):
 
     def __init__(self, CFxHandle, paramDict):
 
-        super(BaseTopologyManager,self).__init__()
+        super(BaseTopologyManager, self).__init__()
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
         self.ipop_state = None
@@ -23,6 +23,7 @@ class BaseTopologyManager(ControllerModule):
         self.CFxHandle.submitCBT(logCBT)
 
     def processCBT(self, cbt):
+
         # In case of a fresh CBT, request the required services
         # from the other modules, by issuing CBTs. If no services
         # from other modules required, process the CBT here only
@@ -64,10 +65,9 @@ class BaseTopologyManager(ControllerModule):
                     self.CBTMappings[cbt.uid].append(conn_stat_CBT.uid)
                     self.pendingCBT[cbt.uid] = cbt
 
-
-                # send message is used as "request for start mutual 
+                # send message is used as "request for start mutual
                 # connection"
-                elif msg_type == "send_msg": 
+                elif msg_type == "send_msg":
                     idle_peer_CBT = self.CFxHandle.createCBT(initiator='Base'
                                                              'TopologyManager',
                                                              recipient='Monitor',
@@ -177,7 +177,8 @@ class BaseTopologyManager(ControllerModule):
                                                                      action='STORE_IDLE_'
                                                                      'PEER_STATE',
                                                                      data={'uid': msg['uid'],
-                                                                            'idle_peer_state': msg})
+                                                                            'idle_'
+                                                                            'peer_state': msg})
                             self.CFxHandle.submitCBT(idle_peer_CBT)
 
                         else:
@@ -205,8 +206,9 @@ class BaseTopologyManager(ControllerModule):
                                                           'TopologyManager',
                                                           recipient='Logger',
                                                           action='warning',
-                                                          data="Receive"
-                                                          " connection response")
+                                                          data="Received "
+                                                          "connection"
+                                                          " response")
                         self.CFxHandle.submitCBT(logCBT)
 
                         if self.check_collision(msg_type, msg["uid"], conn_stat):
@@ -236,18 +238,21 @@ class BaseTopologyManager(ControllerModule):
                                     'send_req': False
                                 }
 
-                                CBT = self.CFxHandle.createCBT(initiator='BaseTopology'
+                                CBT = self.CFxHandle.createCBT(initiator='Base'
+                                                               'Topology'
                                                                'Manager',
-                                                               recipient='BaseTopology'
+                                                               recipient='Base'
+                                                               'Topology'
                                                                'Manager',
-                                                               action='ONDEMAND_'
-                                                               'CONNECTION',
+                                                               action='ONDEMA'
+                                                               'ND_CONNECTION',
                                                                data=cbt_data)
                                 self.CFxHandle.submitCBT(CBT)
 
                 elif(self.pendingCBT[sourceCBT_uid].action == 'TINCAN_PACKET'):
                     for key in self.CBTMappings[sourceCBT_uid]:
-                        if(self.pendingCBT[key].action == 'QUERY_IDLE_PEER_LIST_RESP'):
+                        if(self.pendingCBT[key].action ==
+                           'QUERY_IDLE_PEER_LIST_RESP'):
                             idle_peers = self.pendingCBT[key].data
                     data = self.pendingCBT[sourceCBT_uid].data
 
@@ -256,12 +261,16 @@ class BaseTopologyManager(ControllerModule):
                     if data[54:56] == "\x86\xdd":
                         return
 
-                    log_str = "IP packet forwarded \nversion:{0}\nmsg_type:"\
-                              "{1}\nsrc_uid:{2}\ndest_uid:{3}\nsrc_mac:{4}\ndst_mac:{"\
-                              "5}\neth_type:{6}".format(data[0].encode("hex"),
-                              data[1].encode("hex"), data[2:22].encode("hex"),
-                              data[22:42].encode("hex"), data[42:48].encode("hex"),
-                              data[48:54].encode("hex"), data[54:56].encode("hex"))
+                    log_str = "IP packet forwarded \nversion:{0}"\
+                              "\nmsg_type:{1}\nsrc_uid:{2}\n"\
+                              "dest_uid:{3}\nsrc_mac:{4}\ndst_mac:{5}\n"\
+                              "eth_type:{6}".format(data[0].encode("hex"),
+                                                    data[1].encode("hex"),
+                                                    data[2:22].encode("hex"),
+                                                    data[22:42].encode("hex"),
+                                                    data[42:48].encode("hex"),
+                                                    data[48:54].encode("hex"),
+                                                    data[54:56].encode("hex"))
 
                     logCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
                                                       'Manager',
@@ -276,15 +285,19 @@ class BaseTopologyManager(ControllerModule):
                         return
                     self.create_connection_req(data[2:], idle_peers)
 
-                elif(self.pendingCBT[sourceCBT_uid].action == 'LINK_TRIMMER'):
+                elif(self.pendingCBT[sourceCBT_uid].action ==
+                     'LINK_TRIMMER'):
                     for key in self.CBTMappings[sourceCBT_uid]:
-                        if(self.pendingCBT[key].action == 'QUERY_PEER_LIST_RESP'):
+                        if(self.pendingCBT[key].action ==
+                           'QUERY_PEER_LIST_RESP'):
                             peer_list = self.pendingCBT[key].data
-                        elif(self.pendingCBT[key].action == 'QUERY_IPOP_STATE_RESP'):
+                        elif(self.pendingCBT[key].action ==
+                             'QUERY_IPOP_STATE_RESP'):
                             ipop_state = self.pendingCBT[key].data
                     self.__link_trimmer(peer_list, ipop_state)
 
-                elif(self.pendingCBT[sourceCBT_uid].action == 'ONDEMAND_CONNECTION'):
+                elif(self.pendingCBT[sourceCBT_uid].action ==
+                     'ONDEMAND_CONNECTION'):
                     for key in self.CBTMappings[sourceCBT_uid]:
                         if(self.pendingCBT[key].action == 'RESOLVE_RESP'):
                             ip4 = self.pendingCBT[key].data
@@ -339,7 +352,8 @@ class BaseTopologyManager(ControllerModule):
                                                  data=cbt_data)
             self.CFxHandle.submitCBT(TincanCBT)
 
-        self.create_connection(peer["uid"], fpr, 1, self.CMConfig["sec"], cas, ip4)
+        self.create_connection(peer["uid"], fpr, 1,
+                               self.CMConfig["sec"], cas, ip4)
 
     # Create a TinCan link on request to send the packet
     # received by the controller
@@ -394,7 +408,8 @@ class BaseTopologyManager(ControllerModule):
 
     def create_connection(self, uid, data, nid, sec, cas, ip4):
 
-        conn_dict = {'uid': uid, 'fpr': data, 'nid': nid, 'sec': sec, 'cas': cas}
+        conn_dict = {'uid': uid, 'fpr': data, 'nid': nid,
+                     'sec': sec, 'cas': cas}
         createLinkCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
                                                  'Manager',
                                                  recipient='LinkManager',
@@ -426,7 +441,8 @@ class BaseTopologyManager(ControllerModule):
 
                 conn_stat_pop_CBT = self.CFxHandle.createCBT(initiator='Base'
                                                              'TopologyManager',
-                                                             recipient='Monitor',
+                                                             recipient='Moni'
+                                                             'tor',
                                                              action='DELETE_'
                                                              'CONN_STAT',
                                                              data=uid)
@@ -438,7 +454,8 @@ class BaseTopologyManager(ControllerModule):
                                                      recipient='Monitor',
                                                      action='STORE_CONN_STAT',
                                                      data={'uid': uid,
-                                                           'status': "resp_recv"})
+                                                           'status':
+                                                           "resp_recv"})
             self.CFxHandle.submitCBT(conn_stat_CBT)
             return False
         else:
@@ -482,7 +499,8 @@ class BaseTopologyManager(ControllerModule):
                                                       action='debug',
                                                       data="Inactive,"
                                                       " trimming node:{0}"
-                                                      .format(k) + cbt.initiator)
+                                                      .format(k) +
+                                                      cbt.initiator)
                     self.CFxHandle.submitCBT(logCBT)
 
                     cbtdata = {

@@ -5,7 +5,7 @@ class LinkManager(ControllerModule):
 
     def __init__(self, CFxHandle, paramDict):
 
-        super(LinkManager,self).__init__()
+        super(LinkManager, self).__init__()
         self.CFxHandle = CFxHandle
         self.CMConfig = paramDict
 
@@ -38,7 +38,8 @@ class LinkManager(ControllerModule):
 
         elif(cbt.action == "TRIM_LINK"):
 
-            # cbt.data contains UID
+            # cbt.data is the  UID of the peer node, whose link has
+            # to be trim
             TincanCBT = self.CFxHandle.createCBT(initiator='LinkManager',
                                                  recipient='TincanSender',
                                                  action='DO_TRIM_LINK',
