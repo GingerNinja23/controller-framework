@@ -1,8 +1,53 @@
-{	
-	"CFx" :  {"Param1": "example1", "Param2": "example2", "Param3": "example3"},
-	"ModuleA1" :  {"timer_interval" : "NA", "CBTterminate" : "True", "Param3" : "example3"},	
-	"ModuleB2" :  {"timer_interval" : "NA", "CBTterminate" : "False", "Param3" : "example3"},
-	"ModuleC3" :  {"timer_interval" : "NA", "CBTterminate" : "False", "Param3" : "example3"},
-	"cbtModule" : {"timer_interval" : "6", "CBTterminate": "True", "Param3" : "example3"}
+{
+    "CFx": {
+        "xmpp_username": "gingerninja@jabber.ru",
+        "xmpp_password": "ginger123",
+        "ip4_mask": 24,
+        "xmpp_host": "jabber.ru",
+        "stat_report": true,
+        "tincan_logging": 0,
+        "vpn_type": "GroupVPN"
+    },
+    "TincanListener" : {
+        "socket_read_wait_time": 15,
+        "joinEnabled": true,
+        "dependencies": ["Logger"]
+    },
+    "Logger": {
+        "controller_logging": "DEBUG",
+        "joinEnabled": true
+    },
+    "TincanDispatcher": {
+        "joinEnabled": true,
+        "dependencies": ["Logger"]
+    },
+    "TincanSender":{
+        "dependencies": ["Logger"]
+    },
+    "Monitor": {
+        "joinEnabled": true,
+        "dependencies": ["Logger"]
+    },
+    "BaseTopologyManager": {
+        "on-demand_connection": true,
+        "timer_interval": 15,
+        "joinEnabled": true,
+        "dependencies": ["Logger"]
+    },
+    "LinkManager": {
+        "joinEnabled": true,
+        "dependencies": ["Logger"]
+    },
+    "AddressMapper": {
+        "ip4": "192.168.5.1",
+        "joinEnabled": true,
+        "dependencies": ["Logger"]
+    },
+    "Watchdog":{
+        "timer_interval": 15,
+        "joinEnabled": true,
+        "dependencies": ["Logger"]
+    }
 }
+
 
