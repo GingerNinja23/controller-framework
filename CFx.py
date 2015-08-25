@@ -31,8 +31,9 @@ class CFX(object):
         self.parse_config()
         ipoplib.CONFIG = self.CONFIG
 
-        # CFxHandle is a dict containing the references to CFxHandles of all
-        # CMs with key as the module name and value as the CFxHandle reference
+        # CFxHandleDict is a dict containing the references to
+        # CFxHandles of all CMs with key as the module name and
+        # value as the CFxHandle reference
         self.CFxHandleDict = {}
 
         self.vpn_type = self.CONFIG['CFx']['vpn_type']
@@ -87,7 +88,8 @@ class CFX(object):
         if(self.vpn_type == "GroupVPN"):
             ipoplib.do_set_translation(self.sock, 0)
             ipoplib.do_set_switchmode(self.sock,
-                                      self.CONFIG["TincanSender"]["switchmode"])
+                                      self.CONFIG["TincanSender"]
+                                      ["switchmode"])
         elif(self.vpn_type == "SocialVPN"):
             ipoplib.do_set_translation(self.sock, 1)
 
@@ -124,11 +126,12 @@ class CFX(object):
         # Ignore the network interfaces in the list
         if "network_ignore_list" in self.CONFIG["CFx"]:
             ipoplib.make_call(self.sock, m="set_network_ignore_list",
-                              network_ignore_list=CONFIG["CFx"]["network_ignore_list"])
+                              network_ignore_list=CONFIG["CFx"]
+                              ["network_ignore_list"])
 
         print "CFx initialized. Loading Controller Modules\n"
 
-        self.loaded_modules = ['CFx']  # List of already loaded modules
+        self.loaded_modules = ['CFx']  # List of modules already loaded
 
         # Check for circular dependencies in config.json
         dependency_graph = {}
@@ -223,8 +226,6 @@ class CFX(object):
 
     def __handler(self, signum=None, frame=None):
 
-        # This is a private method, and cannot be called by the CMs
-
         print 'Signal handler called with signal ' + str(signum)
 
     def parse_config(self):
@@ -289,7 +290,8 @@ class CFX(object):
         changed.
         """
         if not config['CFx']['local_uid']:
-            uid = binascii.b2a_hex(os.urandom(self.CONFIG['CFx']['uid_size'] / 2))
+            uid = binascii.b2a_hex(os.urandom(self.CONFIG['CFx']
+                                              ['uid_size'] / 2))
             self.CONFIG['CFx']["local_uid"] = uid
             return True  # modified
         return False
@@ -332,6 +334,7 @@ class CFX(object):
             self.submitCBT(terminateCBT)
 
         # Wait for the threads to process their current CBTs and exit
+        print "Waiting for timer threads to exit gracefully..."
         for handle in self.CFxHandleDict:
             if(self.CFxHandleDict[handle].joinEnabled):
                 self.CFxHandleDict[handle].CMThread.join()

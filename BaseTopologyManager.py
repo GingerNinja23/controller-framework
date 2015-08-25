@@ -147,7 +147,8 @@ class BaseTopologyManager(ControllerModule):
                                     conn_cnt += 1
                             if conn_cnt >= self.CMConfig["multihop_cl"]:
                                 return
-                        if self.check_collision(msg_type, msg["uid"], conn_stat):
+                        if self.check_collision(msg_type, msg["uid"],
+                                                conn_stat):
                             return
                         fpr_len = len(self.ipop_state["_fpr"])
                         fpr = msg["data"][:fpr_len]
@@ -160,7 +161,8 @@ class BaseTopologyManager(ControllerModule):
 
     def create_connection(self, uid, data, nid, sec, cas, ip4):
 
-        conn_dict = {'uid': uid, 'fpr': data, 'nid': nid, 'sec': sec, 'cas': cas}
+        conn_dict = {'uid': uid, 'fpr': data, 'nid': nid,
+                     'sec': sec, 'cas': cas}
         createLinkCBT = self.CFxHandle.createCBT(initiator='BaseTopology'
                                                  'Manager',
                                                  recipient='LinkManager',

@@ -1,9 +1,13 @@
 from abc import ABCMeta, abstractmethod  # Only Python 2.6 and above
 
 
-# Defining an abstract class which the controller
-# modules will implement, forcing them to override
-# all the abstract methods
+"""
+Defining an abstract class which the controller
+modules will implement, forcing them to override
+all the abstract methods
+"""
+
+
 class ControllerModule(object):
 
     __metaclass__ = ABCMeta

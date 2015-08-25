@@ -150,7 +150,8 @@ class Monitor(ControllerModule):
 
                     # Retrieve values from response CBTs
                     for key in self.CBTMappings[sourceCBT_uid]:
-                        if(self.pendingCBT[key].action == 'QUERY_IPOP_STATE_RESP'):
+                        if(self.pendingCBT[key].action ==
+                           'QUERY_IPOP_STATE_RESP'):
                             self.ipop_state = self.pendingCBT[key].data
 
                     # Process the source CBT, once all the required variables
