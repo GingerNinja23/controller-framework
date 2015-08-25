@@ -16,6 +16,7 @@ class TincanListener(ControllerModule):
 
     def initialize(self):
 
+        # Create a thread to listen to Tincan Notifications
         self.TincanListenerThread = Thread(target=self.__tincan_listener)
         self.TincanListenerThread.setDaemon(True)
         self.TincanListenerThread.start()
@@ -33,6 +34,7 @@ class TincanListener(ControllerModule):
         pass
 
     def __tincan_listener(self):
+
         while(True):
             socks, _, _ = select.select(self.sock_list, [], [],
                                         self.CMConfig["socket_read_wait_time"])
@@ -40,7 +42,7 @@ class TincanListener(ControllerModule):
             for sock in socks:
                 if(sock == self.sock or sock == self.sock_svr):
                     sock_to_read = socks[0]
-                    data,adr = sock_to_read.recvfrom(self.CMConfig["buf_size"])
+                    data, adr = sock_to_read.recvfrom(self.CMConfig["buf_size"])
                     cbt = self.CFxHandle.createCBT(initiator='TincanListener',
                                                    recipient='Tincan'
                                                    'Dispatcher',

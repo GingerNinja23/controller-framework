@@ -23,7 +23,7 @@ class CFxHandle(object):
 
     def submitCBT(self, cbt):
 
-        # Submit CBT to CFx which then puts it in the appropriate CM queue
+        # Submit CBT to the CFx
         self.__CFxObject.submitCBT(cbt)
 
     def createCBT(self, initiator='', recipient='', action='', data=''):
@@ -43,7 +43,7 @@ class CFxHandle(object):
         # Intialize CM first
         self.CMInstance.initialize()
 
-        # Create worker thread which is started by CFx
+        # Create worker thread, which is started by CFx
         self.CMThread = threading.Thread(target=self.__worker)
         self.CMThread.setDaemon(True)
 
@@ -52,16 +52,14 @@ class CFxHandle(object):
             self.joinEnabled = True
 
         # Check if the CMConfig has timer_interval specified
-        # If not then assume timer functionality not required
-
         timer_enabled = False
 
         try:
             interval = int(self.CMConfig['timer_interval'])
             timer_enabled = True
         except ValueError:
-            print "Invalid timer configuration for " + key +\
-                  ". Timer has been disabled for this module"
+            logging.warning("Invalid timer configuration for " + key +
+                            ". Timer has been disabled for this module")
         except KeyError:
             pass
 
@@ -82,7 +80,7 @@ class CFxHandle(object):
 
             cbt = self.__getCBT()
 
-            # Break the loop if special terminate CBT received
+            # Break the loop if special terminate CBT is received
             if(cbt.action == 'TERMINATE'):
                 self.terminateFlag = True
                 module_name = self.CMInstance.__class__.__name__

@@ -17,7 +17,6 @@ class TincanSender(ControllerModule):
         self.CMConfig = paramDict
         self.sock = sock_list[0]
         self.sock_svr = sock_list[1]
-        self.tincan_control = "\x01"
 
     def initialize(self):
 
@@ -78,8 +77,8 @@ class TincanSender(ControllerModule):
                                               "CBT from " + cbt.initiator)
             self.CFxHandle.submitCBT(logCBT)
 
-    def do_create_link(self, sock, uid, fpr, overlay_id, sec, cas,
-                       stun=None, turn=None):
+    def do_create_link(self, sock, uid, fpr, overlay_id, sec,
+                       cas, stun=None, turn=None):
         if stun is None:
             stun = random.choice(self.CMConfig["stun"])
         if turn is None:
@@ -98,8 +97,7 @@ class TincanSender(ControllerModule):
         return self.make_call(sock, m="trim_link", uid=uid)
 
     def do_get_state(self, sock, peer_uid="", stats=True):
-        return self.make_call(sock, m="get_state", uid=peer_uid,
-                              stats=stats)
+        return self.make_call(sock, m="get_state", uid=peer_uid, stats=stats)
 
     def do_send_msg(self, sock, method, overlay_id, uid, data):
         return self.make_call(sock, m=method, overlay_id=overlay_id,
@@ -108,11 +106,10 @@ class TincanSender(ControllerModule):
     def do_set_remote_ip(self, sock, uid, ip4, ip6):
         if (self.CMConfig["switchmode"] == 1):
             return self.make_call(sock, m="set_remote_ip", uid=uid,
-                                  ip4="127.0.0.1",
-                                  ip6="::1/128")
+                                  ip4="127.0.0.1", ip6="::1/128")
         else:
-            return self.make_call(sock, m="set_remote_ip", uid=uid,
-                                  ip4=ip4, ip6=ip6)
+            return self.make_call(sock, m="set_remote_ip", uid=uid, ip4=ip4,
+                                  ip6=ip6)
 
     def make_call(self, sock, payload=None, **params):
         if socket.has_ipv6:
@@ -121,11 +118,10 @@ class TincanSender(ControllerModule):
             dest = (self.CMConfig["localhost"], self.CMConfig["svpn_port"])
         if payload is None:
             return sock.sendto(self.ipop_ver + self.tincan_control +
-                               json.dumps(params),
-                               dest)
+                               json.dumps(params), dest)
         else:
-            return sock.sendto(self.ipop_ver + self.tincan_packet + payload,
-                               dest)
+            return sock.sendto(self.ipop_ver + self.tincan_packet +
+                               payload, dest)
 
     def gen_ip6(self, uid, ip6=None):
         if ip6 is None:
@@ -138,10 +134,11 @@ class TincanSender(ControllerModule):
                          payload, **params):
         dest = (dest_addr, dest_port)
         if m_type == self.tincan_control:
-            return sock.sendto(self.ipop_ver + m_type + json.dumps(params),
-                               dest)
+            return sock.sendto(self.ipop_ver + m_type +
+                               json.dumps(params), dest)
         else:
-            return sock.sendto(self.ipop_ver + m_type + payload, dest)
+            return sock.sendto(self.ipop_ver + m_type +
+                               payload, dest)
 
     def timer_method(self):
         pass
