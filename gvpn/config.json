@@ -6,6 +6,8 @@
         "xmpp_host": "",
         "stat_report": true,
         "tincan_logging": 0,
+        "icc": true,
+        "icc_port": 30000,
         "vpn_type": "GroupVPN"
     },
     "TincanListener" : {
