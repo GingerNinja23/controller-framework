@@ -38,7 +38,7 @@ class Watchdog(ControllerModule):
 
         else:
 
-            logCBT = self.CFxHandle.createCBT(initiator='Monitor',
+            logCBT = self.CFxHandle.createCBT(initiator='Watchdog',
                                               recipient='Logger',
                                               action='error',
                                               data="Watchdog: Unrecognized CBT"

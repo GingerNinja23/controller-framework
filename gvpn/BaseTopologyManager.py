@@ -90,6 +90,10 @@ class BaseTopologyManager(ControllerModule):
                 self.CBTMappings[cbt.uid] = [idle_peer_CBT.uid]
                 self.pendingCBT[cbt.uid] = cbt
 
+            elif(cbt.action == "ICC_MSG"):
+                msg = cbt.data
+                msg_type = msg.get("msg_type", None)
+
             elif(cbt.action == "LINK_TRIMMER"):
                 stateCBT = self.CFxHandle.createCBT(initiator='Base'
                                                     'TopologyManager',

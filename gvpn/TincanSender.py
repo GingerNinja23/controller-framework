@@ -1,6 +1,7 @@
 import json
 import socket
 import random
+import ipoplib
 from ControllerModule import ControllerModule
 
 
@@ -17,6 +18,8 @@ class TincanSender(ControllerModule):
         self.CMConfig = paramDict
         self.sock = sock_list[0]
         self.sock_svr = sock_list[1]
+        if self.CMConfig['icc']:
+            self.sock_icc = sock_list[2]
 
     def initialize(self):
 
@@ -68,6 +71,16 @@ class TincanSender(ControllerModule):
             self.make_remote_call(self.sock_svr, m_type=m_type,
                                   dest_addr=dest_addr, dest_port=dest_port,
                                   payload=None, type="echo_reply")
+
+        elif(cbt.action == 'DO_SEND_ICC_MSG'):
+            msg = json.dumps(cbt.data.get('msg'))
+            dest_addr = self.gen_ip6(cbt.data.get('dest_uid'))
+            dest_port = self.CMConfig["icc_port"]
+            self.sock_icc.sendto(self.ipop_ver + self.tincan_control + msg,
+                                 (dest_addr, dest_port))
+
+        elif(cbt.action == 'DO_INSERT_DATA_PACKET'):
+            ipoplib.send_packet(self.sock, cbt.data.decode("hex"))
 
         else:
             logCBT = self.CFxHandle.createCBT(initiator='TincanSender',
