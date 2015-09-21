@@ -124,11 +124,10 @@ class TincanDispatcher(ControllerModule):
 
                 # Send the Tincan Packet to BaseTopologyManager
 
-                packet = data[2:]
                 CBT = self.CFxHandle.createCBT(initiator='TincanDispatcher',
                                                recipient='BaseTopologyManager',
                                                action='TINCAN_PACKET',
-                                               data=packet)
+                                               data=data[2:])
                 self.CFxHandle.submitCBT(CBT)
 
             else:
