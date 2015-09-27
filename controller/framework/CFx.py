@@ -116,7 +116,7 @@ class CFX(object):
                         time.sleep(3)
                         self.sock_icc.bind((self.ip6, self.CONFIG['CFx']["icc_port"]))
                     except KeyboardInterrupt:
-                        exit()
+                        self.terminate()
                     except Exception as e:
                         print("Wait until IPOP Tap is available")
                         continue
