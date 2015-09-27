@@ -3,6 +3,7 @@
 import os
 import sys
 import json
+import time
 import signal
 import socket
 import ipoplib
@@ -20,14 +21,6 @@ class CFX(object):
 
     def __init__(self):
 
-        with open('config.json') as data_file:
-
-            # Read config.json into an OrderedDict, to load the
-            # modules in the order in which they appear in config.json
-            self.json_data = json.load(data_file,
-                                       object_pairs_hook=OrderedDict)
-
-        # Parse config and update default CONFIG in ipoplib
         self.parse_config()
         ipoplib.CONFIG = self.CONFIG
 
@@ -114,6 +107,28 @@ class CFX(object):
                                     self.CONFIG["CFx"]["subnet_mask"],
                                     self.CONFIG["TincanSender"]["switchmode"])
 
+        # Create ICC socket
+        if self.CONFIG['CFx']["icc"]:
+            if socket.has_ipv6:
+                self.sock_icc = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+                while True:
+                    try:
+                        time.sleep(3)
+                        self.sock_icc.bind((self.ip6, self.CONFIG['CFx']["icc_port"]))
+                    except KeyboardInterrupt:
+                        exit()
+                    except Exception as e:
+                        print("Wait until IPOP Tap is available")
+                        continue
+                    else:
+                        break
+
+                self.sock_list.append(self.sock_icc)
+
+            else:
+                print "ICC is enabled but IPv6 is not supported. Exiting"
+                sys.exit()
+
         # Register to the XMPP server
         ipoplib.do_register_service(self.sock, self.user,
                                     self.password, self.host)
@@ -166,7 +181,13 @@ class CFX(object):
             self.load_dependencies(module_name)
 
             # Dynamically importing the modules
-            module = importlib.import_module(module_name)
+            try:
+                module = importlib.import_module("controller.modules."+module_name)
+            except:
+                if(self.vpn_type == "GroupVPN"):
+                    module = importlib.import_module("controller.modules.gvpn."+module_name)
+                elif(self.vpn_type == "SocialVPN"):
+                    module = importlib.import_module("controller.modules.svpn."+module_name)
 
             # Get the class with name key from module
             module_class = getattr(module, module_name)
@@ -177,9 +198,13 @@ class CFX(object):
             # Instantiate the class, with CFxHandle reference and
             # configuration parameters
 
-            # Pass the sock_list as parameter to TincanListener
+            # Append the icc flag and icc port to the modules config and
+            # pass the sock_list as parameter to TincanListener
             # and TincanSender modules
             if(module_name in ['TincanListener', 'TincanSender']):
+                self.CONFIG[module_name]["icc"] = self.CONFIG['CFx']["icc"]
+                self.CONFIG[module_name]["icc_port"] = self.CONFIG['CFx']["icc_port"]
+
                 instance = module_class(self.sock_list,
                                         handle,
                                         self.CONFIG[module_name])
@@ -252,10 +277,12 @@ class CFX(object):
             # Load the config file
             with open(args.config_file) as f:
 
-                loaded_config = json.load(f)
-                for key in loaded_config:
+                # Read config file into an OrderedDict, to load the
+                # modules in the order in which they appear in config.json
+                self.json_data = json.load(f, object_pairs_hook=OrderedDict)
+                for key in self.json_data:
                     if(self.CONFIG.get(key, None)):
-                        self.CONFIG[key].update(loaded_config[key])
+                        self.CONFIG[key].update(self.json_data[key])
 
         if args.config_string:
             # Load the config string

@@ -1,4 +1,4 @@
-from ControllerModule import ControllerModule
+from controller.framework.ControllerModule import ControllerModule
 
 
 class LinkManager(ControllerModule):

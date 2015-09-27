@@ -1,6 +1,6 @@
 import time
-import ipoplib
-from ControllerModule import ControllerModule
+import controller.framework.ipoplib
+from controller.framework.ControllerModule import ControllerModule
 
 
 class Monitor(ControllerModule):

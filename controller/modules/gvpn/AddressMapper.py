@@ -1,5 +1,5 @@
-from ControllerModule import ControllerModule
-from ipoplib import gen_uid
+from controller.framework.ipoplib import gen_uid
+from controller.framework.ControllerModule import ControllerModule
 
 
 class AddressMapper(ControllerModule):

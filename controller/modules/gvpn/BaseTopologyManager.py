@@ -1,8 +1,8 @@
 import time
 import socket
 import struct
-import ipoplib
-from ControllerModule import ControllerModule
+import controller.framework.ipoplib
+from controller.framework.ControllerModule import ControllerModule
 
 
 class BaseTopologyManager(ControllerModule):

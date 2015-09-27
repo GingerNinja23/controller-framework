@@ -1,6 +1,6 @@
 import select
 from threading import Thread
-from ControllerModule import ControllerModule
+from controller.framework.ControllerModule import ControllerModule
 
 
 class TincanListener(ControllerModule):
@@ -9,10 +9,12 @@ class TincanListener(ControllerModule):
 
         super(TincanListener, self).__init__()
         self.CFxHandle = CFxHandle
+        self.CMConfig = paramDict
         self.sock = sock_list[0]
         self.sock_svr = sock_list[1]
+        if self.CMConfig['icc']:
+            self.sock_icc = sock_list[2]
         self.sock_list = sock_list
-        self.CMConfig = paramDict
 
     def initialize(self):
 
@@ -41,13 +43,21 @@ class TincanListener(ControllerModule):
 
             for sock in socks:
                 if(sock == self.sock or sock == self.sock_svr):
-                    sock_to_read = socks[0]
-                    data, adr = sock_to_read.recvfrom(self.CMConfig["buf_size"])
+                    data,addr = sock.recvfrom(self.CMConfig["buf_size"])
                     cbt = self.CFxHandle.createCBT(initiator='TincanListener',
                                                    recipient='Tincan'
                                                    'Dispatcher',
                                                    action='TINCAN_PKT',
-                                                   data=[data, adr])
+                                                   data=[data, addr])
+                    self.CFxHandle.submitCBT(cbt)
+
+                elif(sock == self.sock_icc):
+                    data,addr = sock.recvfrom(self.CMConfig["buf_size"])
+                    cbt = self.CFxHandle.createCBT(initiator='TincanListener',
+                                                   recipient='Tincan'
+                                                   'Dispatcher',
+                                                   action='ICC_PKT',
+                                                   data=[data, addr])
                     self.CFxHandle.submitCBT(cbt)
 
     def terminate(self):

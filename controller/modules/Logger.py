@@ -1,5 +1,5 @@
 import logging
-from ControllerModule import ControllerModule
+from controller.framework.ControllerModule import ControllerModule
 
 
 class Logger(ControllerModule):
