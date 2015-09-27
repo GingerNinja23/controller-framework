@@ -30,7 +30,7 @@ After starting IPOP-Tincan, you can either run the GroupVPN controller or the So
 * Start GroupVPN controller
   ```
   cd ../../..
-  python -m controller.framework.CFx. -c controller/modules/gvpn-config.json &> log.txt &
+  python -m controller.framework.CFx -c controller/modules/gvpn-config.json &> log.txt &
   ```
 * Check the status 
 
@@ -50,7 +50,7 @@ After starting IPOP-Tincan, you can either run the GroupVPN controller or the So
 * Start SocialVPN controller
   ```
   cd ../../..
-  python -m controller.framework.CFx. -c controller/modules/svpn-config.json &> log.txt &
+  python -m controller.framework.CFx -c controller/modules/svpn-config.json &> log.txt &
   ```
   
 * Check the status 
