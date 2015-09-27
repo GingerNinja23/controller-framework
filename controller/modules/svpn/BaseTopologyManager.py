@@ -1,4 +1,4 @@
-import controller.framework.ipoplib
+import controller.framework.ipoplib as ipoplib
 from controller.framework.ControllerModule import ControllerModule
 
 
