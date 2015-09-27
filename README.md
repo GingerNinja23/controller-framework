@@ -6,9 +6,9 @@
 
 * Download and extract the controller framework
   ```
-  wget -O controller-framework-beta-v0.3.tar.gz https://goo.gl/UQHfCE
-  tar xvzf controller-framework-beta-v0.3.tar.gz
-  cd controller-framework-beta-v0.3
+  wget -O controller-framework-beta-v0.3.1.tar.gz https://goo.gl/e7BSpo
+  tar xvzf controller-framework-beta-v0.3.1.tar.gz
+  cd controller-framework-beta-v0.3.1
   ```
 
 * Run IPOP-Tincan 
@@ -22,14 +22,15 @@ After starting IPOP-Tincan, you can either run the GroupVPN controller or the So
 
 * Change directory to gvpn
   ```
-  cd gvpn
+  cd controller/modules/gvpn
   ```
 
-* Change config.json according to the requirement. Add xmpp_username, xmpp_password and xmpp_host to the config file and ensure that the IP addresses are different for all the nodes.
+* Change gvpn-config.json according to the requirement. Add xmpp_username, xmpp_password and xmpp_host to the config file and ensure that the IP addresses are different for all the nodes.
 
 * Start GroupVPN controller
   ```
-  python CFx.py -c config.json &> log.txt &
+  cd ../../..
+  python -m controller.framework.CFx. -c controller/modules/gvpn-config.json &> log.txt &
   ```
 * Check the status 
 
@@ -41,14 +42,15 @@ After starting IPOP-Tincan, you can either run the GroupVPN controller or the So
 
 * Change directory to svpn
   ```
-  cd svpn
+  cd controller/modules/svpn
   ```
 
-* Change config.json according to the requirement. Add xmpp_username, xmpp_password and xmpp_host to the config file.
+* Change svpn-config.json according to the requirement. Add xmpp_username, xmpp_password and xmpp_host to the config file.
 
 * Start SocialVPN controller
   ```
-  python CFx.py -c config.json &> log.txt &
+  cd ../../..
+  python -m controller.framework.CFx. -c controller/modules/svpn-config.json &> log.txt &
   ```
   
 * Check the status 
